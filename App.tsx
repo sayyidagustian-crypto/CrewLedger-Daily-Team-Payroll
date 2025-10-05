@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, AppConfig } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
@@ -698,22 +699,26 @@ const App: React.FC = () => {
         const [accessCode, setAccessCode] = useState('');
         
         const handleUnlockOwnerMode = () => {
-            const validAdminCode = remoteConfigService.getTuningValue('admin_access_code');
-            if (accessCode.trim() !== validAdminCode) {
+            const code = accessCode.trim();
+            const validAdminCodes = remoteConfigService.getTuningValue('admin_access_codes') || [];
+    
+            // 1. Check if the code exists in the master list from remote config.
+            if (!validAdminCodes.includes(code)) {
                 alert(t('ownerCodeInvalidError'));
                 setAccessCode('');
                 return;
             }
     
-            if (usedCodes.includes(validAdminCode)) {
+            // 2. Check if the code has already been used on this device.
+            if (usedCodes.includes(code)) {
                 alert(t('ownerCodeUsedError'));
                 setAccessCode('');
                 return;
             }
     
-            // Success
+            // Success: Unlock mode and add the code to the list of used codes for this device.
             setIsOwnerMode(true);
-            setUsedCodes(prev => [...prev, validAdminCode]);
+            setUsedCodes(prev => [...prev, code]);
             setAccessCode(''); // Clear the code after successful use
         };
     
