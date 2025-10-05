@@ -696,18 +696,16 @@ const App: React.FC = () => {
         });
         const [usedCodes, setUsedCodes] = useLocalStorage<string[]>('usedAdminCodes', []);
         const [accessCode, setAccessCode] = useState('');
-
-        // This is the one-time code you can ask AI Studio to change.
-        const ADMIN_CODE = 'ADMIN-CODE-001';
         
         const handleUnlockOwnerMode = () => {
-            if (accessCode.trim() !== ADMIN_CODE) {
+            const validAdminCode = remoteConfigService.getTuningValue('admin_access_code');
+            if (accessCode.trim() !== validAdminCode) {
                 alert(t('ownerCodeInvalidError'));
                 setAccessCode('');
                 return;
             }
     
-            if (usedCodes.includes(ADMIN_CODE)) {
+            if (usedCodes.includes(validAdminCode)) {
                 alert(t('ownerCodeUsedError'));
                 setAccessCode('');
                 return;
@@ -715,7 +713,7 @@ const App: React.FC = () => {
     
             // Success
             setIsOwnerMode(true);
-            setUsedCodes(prev => [...prev, ADMIN_CODE]);
+            setUsedCodes(prev => [...prev, validAdminCode]);
             setAccessCode(''); // Clear the code after successful use
         };
     

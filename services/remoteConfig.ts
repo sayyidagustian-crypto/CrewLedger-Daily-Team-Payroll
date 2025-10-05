@@ -11,6 +11,7 @@ interface TuningValues {
   ad_unit_id: string;
   default_rate: number;
   globalNoticeMessage: string;
+  admin_access_code: string;
 }
 
 export interface RemoteConfig {
@@ -31,6 +32,7 @@ const defaultConfig: RemoteConfig = {
     ad_unit_id: "ca-app-pub-3940256099942544/6300978111", // Default test ID
     default_rate: 0.95,
     globalNoticeMessage: "",
+    admin_access_code: "ADMIN-CODE-001", // The one-time code is now managed here
   },
 };
 
