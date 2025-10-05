@@ -1,5 +1,4 @@
 
-
 import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 
 // 1. Define Translation Data
@@ -12,6 +11,10 @@ const translations = {
     menuHint: 'Use the menu on the left to start managing your data.',
     cancel: 'Cancel',
     delete: 'Delete',
+    // FIX: Add 'edit' translation key
+    edit: 'Edit',
+    // FIX: Add 'saveChanges' translation key
+    saveChanges: 'Save Changes',
     confirmDeletionTitle: 'Confirm Deletion',
     confirmDeletionMessage: 'Are you sure you want to delete this item? This action cannot be undone.',
 
@@ -26,6 +29,8 @@ const translations = {
     // Employee Manager
     addEmployee: 'Add Employee',
     addNewEmployee: 'Add New Employee',
+    // FIX: Add 'editEmployee' translation key
+    editEmployee: 'Edit Employee',
     fullName: 'Full Name',
     fullNamePlaceholder: 'e.g. John Doe',
     positionOptional: 'Position (Optional)',
@@ -34,12 +39,16 @@ const translations = {
     active: 'Active',
     inactive: 'Inactive',
     profilePictureOptional: 'Profile Picture (Optional)',
+    // FIX: Add 'upload' translation key
+    upload: 'Upload',
     employeeList: 'Employee List',
     noPosition: 'No position',
     noEmployeeData: 'No employee data yet.',
 
     // Rate Manager
     addRate: 'Add Rate',
+    // FIX: Add 'editRate' translation key
+    editRate: 'Edit Rate',
     taskJobName: 'Task/Job Name',
     taskPlaceholder: 'e.g. Brick Laying',
     ratePerUnit: 'Rate per Unit',
@@ -97,29 +106,37 @@ const translations = {
     aboutText: 'This application was created to simplify the recording and calculation of piece-rate wages with an equal-sharing system.',
     acknowledgements: 'Acknowledgements',
     ackGod: 'God Almighty, for all His guidance and blessings.',
+    ackGoogle: 'Google, for providing the AI Studio platform that made this application possible.',
+    ackBrand: 'The developer, SAT18 Official.',
     ackContributors: 'Contributors and users who provided valuable feedback.',
     builtWith: 'Built with Assistance From',
     viewRules: 'View Rules & Privacy Policy',
-    cloudSyncComingSoon: 'Cloud Sync (Coming Soon)',
-    cloudSyncDesc: 'This is an optional feature that is not yet enabled, to keep the app free and simple to configure.',
-    cloudSyncBackupHint: 'You can still use the "Local Backup" feature below to securely save your data to your device.',
-    googleDriveSync: 'Google Drive Sync',
-    googleDriveSyncDesc: 'Link your Google account to securely back up and restore data to your Google Drive.',
-    connectGoogle: 'Connect Google Account',
-    signInToEnable: 'Sign In to Enable',
-    signInToEnableDesc: 'Sign in with your Google account to enable cloud backup and restore.',
-    backup: 'Backup',
-    restore: 'Restore',
-    disconnectAccount: 'Disconnect Account',
-    localBackup: 'Local Backup',
+    
+    // Cloud Sync
+    cloudSyncTitle: 'Google Drive Sync',
+    driveInitializing: 'Initializing Google Drive connection...',
+    driveConnectDesc: 'Back up and restore your data securely using your own Google Drive account. This app will only have access to its own backup file.',
+    connectGoogleDrive: 'Connect to Google Drive',
+    disconnect: 'Disconnect',
+    syncToDrive: 'Sync to Drive',
+    restoreFromDrive: 'Restore from Drive',
+    driveLastSync: 'Last sync',
+    driveAuthError: 'Could not sign in to Google Drive. Please try again.',
+    driveSyncSuccess: 'Data successfully backed up to Google Drive.',
+    driveSyncError: 'An error occurred while syncing to Google Drive.',
+    driveRestoreConfirm: 'Are you sure you want to restore data from Google Drive? This will overwrite all current local data.',
+    driveNoBackupFound: 'No backup file found in Google Drive.',
+    driveRestoreError: 'An error occurred while restoring from Google Drive.',
+
+    localBackup: 'Local Backup (Manual)',
     localBackupDesc: 'Save all your application data to a JSON file on this device.',
     backupToFile: 'Backup Data to File',
-    localRestore: 'Local Restore',
+    localRestore: 'Local Restore (Manual)',
     localRestoreDesc: 'Choose a backup file (.json) from your device to restore data.',
     warning: 'Warning',
     warningRestore: 'This action will overwrite all existing data in the app.',
     restoreFromFile: 'Restore Data from File',
-    dataExportedSuccess: 'Data exported successfully! Save this file in a safe place, like Google Drive.',
+    dataExportedSuccess: 'Data exported successfully! Save this file in a safe place.',
     dataExportedError: 'Failed to export data.',
     confirmRestore: 'ATTENTION: Restoring data will overwrite ALL current data. This action cannot be undone. Proceed?',
     dataRestoredSuccess: 'Data restored successfully! The application will now reload to apply the changes.',
@@ -141,24 +158,31 @@ const translations = {
     reportDescriptionPlaceholder: 'e.g., Steps to reproduce:\n1. Go to Daily Log page\n2. ...',
     sendReport: 'Send Report via Email',
 
-    // Guest Mode
+    // Guest & Auth
     continueAsGuest: 'Continue as Guest',
-    guestUser: 'Guest User',
-    signIn: 'Sign In',
-    logout: 'Sign Out',
-    
+    guestUser: 'Guest',
+    logout: 'Logout',
+    emailAddress: 'Email Address',
+    password: 'Password',
+    login: 'Login',
+    register: 'Register',
+    dontHaveAccount: "Don't have an account? Register",
+    alreadyHaveAccount: "Already have an account? Login",
+    loginSecurityWarning: 'This is for data separation on this device only. <strong>Do not use a real password.</strong>',
+    registrationSuccess: 'Registration successful! You can now log in.',
+    userExists: 'A user with this email already exists.',
+    invalidCredentials: 'Invalid email or password.',
+
     // Policy Modal
     policyTitle: 'Rules & Privacy Policy',
     policyWelcome: 'Welcome! Before using the app, please read and agree to the following points:',
     policyStorageTitle: '1. Data Storage',
     policyStorageText: "All data you enter (employee data, rates, daily logs) is stored locally on your device using the browser's Local Storage. This data is not sent to or stored on any external server by this application.",
-    policyGoogleTitle: '2. Google Drive Sync (Optional)',
-    policyGoogleText: 'This app provides a feature to back up and restore data to your personal Google Drive. This feature is entirely optional. If you choose to use it, the app will request permission to access your Google Drive solely to create and read the app-specific backup file (`crewledger-backup.json`). We do not have access to any other files in your Drive.',
-    policyResponsibilityTitle: '3. User Responsibility',
+    policyResponsibilityTitle: '2. User Responsibility',
     policyResponsibilityText: 'You are solely responsible for the accuracy of the data entered. The developer is not liable for calculation errors caused by incorrect data input. Please always double-check your entries.',
-    policyWarrantyTitle: '4. No Warranty',
+    policyWarrantyTitle: '3. No Warranty',
     policyWarrantyText: 'This application is provided "as is" without any warranty. While we strive to make this app as accurate as possible, we do not guarantee it will be free of bugs or errors.',
-    policyOfficialTitle: '5. Not an Official Tool',
+    policyOfficialTitle: '4. Not an Official Tool',
     policyOfficialText: 'This is a helper tool and is not intended as a legally validated payroll system. Use it wisely.',
     policyAgree: 'I Understand and Agree',
     
@@ -179,44 +203,48 @@ const translations = {
     allowancesBonus: 'Allowances / Bonus',
     netSalary: 'NET SALARY',
     share: 'Share',
-    sharing: 'Sharing...',
+    sharing: 'Sharing... aistudio-gaji-borongan-project:gaji-borongan-app:4UnL4Fqg1PqJ1b1K0v2h1j',
+    shareNotSupported: 'Sharing is not supported on this browser.',
+    shareError: 'An error occurred while trying to share.',
     exportToPDF: 'Export to PDF',
-    shareNotSupported: 'Sharing is not supported in this browser.',
-    shareError: 'Failed to share payslip.',
-
+    
     // Owner Mode
     ownerAccess: 'Owner Access',
-    ownerAccessLogin: 'Developer Access Login',
-    enterAccessCode: 'Enter Access Code',
+    ownerAccessLogin: 'Owner Access Login',
+    enterAccessCode: 'Enter the owner access code to open the developer panel.',
     accessCode: 'Access Code',
-    enter: 'Enter',
     invalidCode: 'Invalid access code.',
-    ownerPanel: 'Developer Panel',
-    ownerPanelDesc: 'These settings are for the application owner and can affect core functionality. Use with caution.',
+    enter: 'Enter',
+    ownerPanel: 'Owner Panel',
+    ownerPanelDesc: 'This panel contains sensitive settings. Changes here can affect the entire application.',
     adSettings: 'Ad Settings',
-    admobBannerId: 'AdMob Banner ID',
+    admobBannerId: 'AdMob Banner ID (Web)',
     admobBannerIdPlaceholder: 'ca-app-pub-xxxxxxxx/xxxxxxxx',
-    showAds: 'Show Banner Ads',
+    showAds: 'Show Ads',
     saveAdSettings: 'Save Ad Settings',
-    adSettingsSaved: 'Ad settings saved. Reload app to see changes.',
+    adSettingsSaved: 'Ad settings have been saved.',
     dangerZone: 'Danger Zone',
-    dangerZoneDesc: 'These actions are irreversible. Be absolutely sure before proceeding.',
-    clearAllData: 'Clear All Application Data',
-    clearAllDataConfirm: 'WARNING! You are about to delete ALL data for ALL users from this device. This cannot be undone. Are you absolutely sure?',
+    dangerZoneDesc: 'The action below is irreversible and will delete all user data stored in this browser.',
+    clearAllData: 'Clear All App Data',
+    clearAllDataConfirm: 'ARE YOU ABSOLUTELY SURE? This will delete all employees, rates, logs, and history from every user account on this device. This cannot be undone.',
     dataCleared: 'All application data has been cleared.',
-    logoutOwnerMode: 'Logout from Developer Mode',
+    logoutOwnerMode: 'Logout from Owner Mode',
   },
   id: {
     // General
     appName: 'CrewLedger',
-    appDescription: 'Penggajian Tim Harian',
+    appDescription: 'Gaji Harian Tim',
     welcomeMessage: 'Selamat Datang di CrewLedger',
-    menuHint: 'Gunakan menu di kiri untuk mulai mengelola data Anda.',
+    menuHint: 'Gunakan menu di sebelah kiri untuk mulai mengelola data Anda.',
     cancel: 'Batal',
     delete: 'Hapus',
+    // FIX: Add 'edit' translation key
+    edit: 'Ubah',
+    // FIX: Add 'saveChanges' translation key
+    saveChanges: 'Simpan Perubahan',
     confirmDeletionTitle: 'Konfirmasi Penghapusan',
     confirmDeletionMessage: 'Apakah Anda yakin ingin menghapus item ini? Tindakan ini tidak dapat dibatalkan.',
-
+    
     // Tabs
     dailyLog: 'Catatan Harian',
     payslipGenerator: 'Buat Slip Gaji',
@@ -228,33 +256,39 @@ const translations = {
     // Employee Manager
     addEmployee: 'Tambah Karyawan',
     addNewEmployee: 'Tambah Karyawan Baru',
+    // FIX: Add 'editEmployee' translation key
+    editEmployee: 'Ubah Karyawan',
     fullName: 'Nama Lengkap',
     fullNamePlaceholder: 'cth. Budi Santoso',
     positionOptional: 'Jabatan (Opsional)',
     positionPlaceholder: 'cth. Staf Lapangan',
     status: 'Status',
     active: 'Aktif',
-    inactive: 'Non-aktif',
+    inactive: 'Tidak Aktif',
     profilePictureOptional: 'Foto Profil (Opsional)',
+    // FIX: Add 'upload' translation key
+    upload: 'Unggah',
     employeeList: 'Daftar Karyawan',
     noPosition: 'Tanpa jabatan',
-    noEmployeeData: 'Data karyawan masih kosong.',
-    
+    noEmployeeData: 'Belum ada data karyawan.',
+
     // Rate Manager
     addRate: 'Tambah Tarif',
+    // FIX: Add 'editRate' translation key
+    editRate: 'Ubah Tarif',
     taskJobName: 'Nama Tugas/Pekerjaan',
     taskPlaceholder: 'cth. Pasang Bata',
     ratePerUnit: 'Tarif per Satuan',
-    ratePlaceholder: 'cth. 50000',
+    ratePlaceholder: 'cth. 1500',
     rateList: 'Daftar Tarif',
     perUnit: '/ satuan',
-    noRateData: 'Data tarif masih kosong.',
+    noRateData: 'Belum ada data tarif.',
 
     // Daily Log
-    dailyGroupEntry: 'Catatan Grup Harian',
+    dailyGroupEntry: 'Catatan Harian Grup',
     date: 'Tanggal',
-    selectPresentEmployees: 'Pilih Karyawan Hadir',
-    employeesSelected: 'terpilih',
+    selectPresentEmployees: 'Pilih Karyawan yang Hadir',
+    employeesSelected: 'dipilih',
     addTask: 'Tambah Tugas',
     task: 'Tugas',
     selectTask: '-- Pilih Tugas --',
@@ -263,15 +297,15 @@ const translations = {
     addTaskToList: '+ Tambah Tugas ke Daftar',
     todaysTaskList: "Daftar Tugas Hari Ini",
     remove: 'Hapus',
-    todaysTotal: "Total Hari Ini",
+    todaysTotal: 'Total Hari Ini',
     saveDailyLog: 'Simpan Catatan Harian',
-    logForDate: 'Catatan Tanggal',
+    logForDate: 'Catatan untuk Tanggal',
     workersPresent: 'pekerja hadir',
     perPerson: '/orang',
-    deleteLogEntry: 'Hapus catatan ini',
+    deleteLogEntry: 'Hapus Catatan Ini',
     noLogEntries: 'Tidak ada catatan untuk tanggal ini.',
-    alertFillAllFields: 'Harap isi tanggal, pilih minimal satu karyawan, dan tambah minimal satu tugas.',
-    alertSelectTaskAndQuantity: 'Harap pilih tugas dan masukkan jumlahnya.',
+    alertFillAllFields: 'Harap isi tanggal, pilih setidaknya satu karyawan, dan tambahkan setidaknya satu tugas.',
+    alertSelectTaskAndQuantity: 'Silakan pilih tugas dan masukkan jumlahnya.',
 
     // Payslip Generator
     generatePayslip: 'Buat Slip Gaji',
@@ -289,49 +323,57 @@ const translations = {
     generating: 'Membuat...',
     generationComplete: 'Pembuatan Selesai',
     generationSummary: 'Berhasil membuat {{successCount}} slip gaji. {{failCount}} karyawan tidak memiliki pendapatan pada periode ini.',
-    
+
     // History
     payslipHistory: 'Riwayat Slip Gaji',
-    noPayslipHistory: 'Riwayat slip gaji masih kosong.',
+    noPayslipHistory: 'Tidak ada riwayat slip gaji yang tersimpan.',
 
     // Settings
     aboutThisApp: 'Tentang Aplikasi Ini',
-    aboutText: 'Aplikasi ini dibuat untuk mempermudah pencatatan dan perhitungan upah borongan dengan sistem bagi rata.',
+    aboutText: 'Aplikasi ini dibuat untuk menyederhanakan pencatatan dan penghitungan upah borongan dengan sistem bagi rata.',
     acknowledgements: 'Ucapan Terima Kasih',
-    ackGod: 'Tuhan Yang Maha Esa, atas segala petunjuk dan karunia-Nya.',
+    ackGod: 'Tuhan Yang Maha Esa, atas segala petunjuk dan rahmat-Nya.',
+    ackGoogle: 'Google, karena telah menyediakan platform AI Studio yang memungkinkan aplikasi ini dibuat.',
+    ackBrand: 'Pengembang aplikasi, SAT18 Official.',
     ackContributors: 'Kontributor dan pengguna yang memberikan masukan berharga.',
-    builtWith: 'Dibuat dengan Bantuan Dari',
+    builtWith: 'Dibangun dengan Bantuan',
     viewRules: 'Lihat Aturan & Kebijakan Privasi',
-    cloudSyncComingSoon: 'Sinkronisasi Cloud (Segera Hadir)',
-    cloudSyncDesc: 'Ini adalah fitur opsional yang belum diaktifkan, agar aplikasi tetap gratis dan mudah dikonfigurasi.',
-    cloudSyncBackupHint: 'Anda masih bisa menggunakan fitur "Cadangan Lokal" di bawah ini untuk menyimpan data Anda dengan aman ke perangkat Anda.',
-    googleDriveSync: 'Sinkronisasi Google Drive',
-    googleDriveSyncDesc: 'Hubungkan akun Google Anda untuk mencadangkan dan memulihkan data dengan aman ke Google Drive Anda.',
-    connectGoogle: 'Hubungkan Akun Google',
-    signInToEnable: 'Masuk untuk Mengaktifkan',
-    signInToEnableDesc: 'Masuk dengan akun Google Anda untuk mengaktifkan pencadangan dan pemulihan cloud.',
-    backup: 'Cadangkan',
-    restore: 'Pulihkan',
-    disconnectAccount: 'Putuskan Akun',
-    localBackup: 'Cadangan Lokal',
+
+    // Cloud Sync
+    cloudSyncTitle: 'Sinkronisasi Google Drive',
+    driveInitializing: 'Menyiapkan koneksi Google Drive...',
+    driveConnectDesc: 'Cadangkan dan pulihkan data Anda dengan aman menggunakan akun Google Drive Anda sendiri. Aplikasi ini hanya akan memiliki akses ke file cadangannya sendiri.',
+    connectGoogleDrive: 'Hubungkan ke Google Drive',
+    disconnect: 'Putuskan',
+    syncToDrive: 'Sinkronkan ke Drive',
+    restoreFromDrive: 'Pulihkan dari Drive',
+    driveLastSync: 'Sinkronisasi terakhir',
+    driveAuthError: 'Tidak dapat masuk ke Google Drive. Silakan coba lagi.',
+    driveSyncSuccess: 'Data berhasil dicadangkan ke Google Drive.',
+    driveSyncError: 'Terjadi kesalahan saat sinkronisasi ke Google Drive.',
+    driveRestoreConfirm: 'Apakah Anda yakin ingin memulihkan data dari Google Drive? Ini akan menimpa semua data lokal saat ini.',
+    driveNoBackupFound: 'File cadangan tidak ditemukan di Google Drive.',
+    driveRestoreError: 'Terjadi kesalahan saat memulihkan dari Google Drive.',
+
+    localBackup: 'Cadangan Lokal (Manual)',
     localBackupDesc: 'Simpan semua data aplikasi Anda ke sebuah file JSON di perangkat ini.',
     backupToFile: 'Cadangkan Data ke File',
-    localRestore: 'Pemulihan Lokal',
+    localRestore: 'Pemulihan Lokal (Manual)',
     localRestoreDesc: 'Pilih file cadangan (.json) dari perangkat Anda untuk memulihkan data.',
     warning: 'Peringatan',
     warningRestore: 'Tindakan ini akan menimpa semua data yang ada di aplikasi.',
     restoreFromFile: 'Pulihkan Data dari File',
-    dataExportedSuccess: 'Data berhasil diekspor! Simpan file ini di tempat aman, seperti Google Drive.',
+    dataExportedSuccess: 'Data berhasil diekspor! Simpan file ini di tempat yang aman.',
     dataExportedError: 'Gagal mengekspor data.',
     confirmRestore: 'PERHATIAN: Memulihkan data akan menimpa SEMUA data saat ini. Tindakan ini tidak dapat dibatalkan. Lanjutkan?',
     dataRestoredSuccess: 'Data berhasil dipulihkan! Aplikasi akan dimuat ulang untuk menerapkan perubahan.',
     dataRestoredError: 'Gagal memulihkan data: {{error}}',
     readFileError: 'Gagal membaca file.',
     languageAndCurrency: 'Bahasa & Mata Uang',
-    languageAndCurrencyDesc: 'Pilih bahasa tampilan. Mata uang akan diatur otomatis (IDR untuk Bahasa Indonesia, USD untuk Bahasa Inggris).',
+    languageAndCurrencyDesc: 'Pilih bahasa tampilan. Mata uang akan diatur secara otomatis (IDR untuk Bahasa Indonesia, USD untuk Bahasa Inggris).',
     language: 'Bahasa',
-    english: 'English',
-    indonesian: 'Bahasa Indonesia',
+    english: 'Inggris (English)',
+    indonesian: 'Indonesia',
     reportProblem: 'Laporkan Masalah',
     reportProblemDesc: 'Menemukan bug atau punya saran? Beri tahu kami!',
     openReportForm: 'Buka Formulir Laporan',
@@ -343,31 +385,38 @@ const translations = {
     reportDescriptionPlaceholder: 'cth., Langkah-langkah untuk mereproduksi:\n1. Buka halaman Catatan Harian\n2. ...',
     sendReport: 'Kirim Laporan via Email',
 
-    // Guest Mode
+    // Guest & Auth
     continueAsGuest: 'Lanjutkan sebagai Tamu',
-    guestUser: 'Pengguna Tamu',
-    signIn: 'Masuk',
+    guestUser: 'Tamu',
     logout: 'Keluar',
+    emailAddress: 'Alamat Email',
+    password: 'Kata Sandi',
+    login: 'Masuk',
+    register: 'Daftar',
+    dontHaveAccount: 'Belum punya akun? Daftar',
+    alreadyHaveAccount: 'Sudah punya akun? Masuk',
+    loginSecurityWarning: 'Ini hanya untuk pemisahan data di perangkat ini. <strong>Jangan gunakan kata sandi asli Anda.</strong>',
+    registrationSuccess: 'Pendaftaran berhasil! Anda sekarang dapat masuk.',
+    userExists: 'Pengguna dengan email ini sudah ada.',
+    invalidCredentials: 'Email atau kata sandi tidak valid.',
 
     // Policy Modal
     policyTitle: 'Aturan & Kebijakan Privasi',
     policyWelcome: 'Selamat datang! Sebelum menggunakan aplikasi, harap baca dan setujui poin-poin berikut:',
     policyStorageTitle: '1. Penyimpanan Data',
-    policyStorageText: 'Semua data yang Anda masukkan (data karyawan, tarif, catatan harian) disimpan secara lokal di perangkat Anda menggunakan Local Storage browser. Data ini tidak dikirim atau disimpan di server eksternal mana pun oleh aplikasi ini.',
-    policyGoogleTitle: '2. Sinkronisasi Google Drive (Opsional)',
-    policyGoogleText: 'Aplikasi ini menyediakan fitur untuk mencadangkan dan memulihkan data ke Google Drive pribadi Anda. Fitur ini sepenuhnya opsional. Jika Anda memilih untuk menggunakannya, aplikasi akan meminta izin untuk mengakses Google Drive Anda hanya untuk membuat dan membaca file cadangan khusus aplikasi (`crewledger-backup.json`). Kami tidak memiliki akses ke file lain di Drive Anda.',
-    policyResponsibilityTitle: '3. Tanggung Jawab Pengguna',
-    policyResponsibilityText: 'Anda bertanggung jawab penuh atas keakuratan data yang dimasukkan. Pengembang tidak bertanggung jawab atas kesalahan perhitungan yang disebabkan oleh input data yang salah. Harap selalu periksa kembali entri Anda.',
-    policyWarrantyTitle: '4. Tanpa Garansi',
-    policyWarrantyText: 'Aplikasi ini disediakan "sebagaimana adanya" tanpa jaminan apa pun. Meskipun kami berusaha membuat aplikasi ini seakurat mungkin, kami tidak menjamin aplikasi ini akan bebas dari bug atau kesalahan.',
-    policyOfficialTitle: '5. Bukan Alat Resmi',
+    policyStorageText: 'Semua data yang Anda masukkan (data karyawan, tarif, catatan harian) disimpan secara lokal di perangkat Anda menggunakan Penyimpanan Lokal peramban. Data ini tidak dikirim atau disimpan di server eksternal mana pun oleh aplikasi ini.',
+    policyResponsibilityTitle: '2. Tanggung Jawab Pengguna',
+    policyResponsibilityText: 'Anda sepenuhnya bertanggung jawab atas keakuratan data yang dimasukkan. Pengembang tidak bertanggung jawab atas kesalahan perhitungan yang disebabkan oleh input data yang salah. Harap selalu periksa kembali entri Anda.',
+    policyWarrantyTitle: '3. Tanpa Garansi',
+    policyWarrantyText: 'Aplikasi ini disediakan "sebagaimana adanya" tanpa jaminan apa pun. Meskipun kami berusaha keras untuk membuat aplikasi ini seakurat mungkin, kami tidak menjamin aplikasi ini akan bebas dari bug atau kesalahan.',
+    policyOfficialTitle: '4. Bukan Alat Resmi',
     policyOfficialText: 'Ini adalah alat bantu dan tidak dimaksudkan sebagai sistem penggajian yang divalidasi secara hukum. Gunakan dengan bijak.',
     policyAgree: 'Saya Mengerti dan Setuju',
 
     // Payslip Preview
     payslip: 'SLIP GAJI',
     period: 'Periode',
-    payslipPreview: 'Pratinau Slip Gaji',
+    payslipPreview: 'Pratinjau Slip Gaji',
     generatePayslipHint: 'Buat slip gaji untuk melihat pratinjau di sini.',
     employeeDetails: 'Detail Karyawan',
     employeeName: 'Nama Karyawan',
@@ -382,136 +431,113 @@ const translations = {
     netSalary: 'GAJI BERSIH',
     share: 'Bagikan',
     sharing: 'Membagikan...',
+    shareNotSupported: 'Berbagi tidak didukung di peramban ini.',
+    shareError: 'Terjadi kesalahan saat mencoba berbagi.',
     exportToPDF: 'Ekspor ke PDF',
-    shareNotSupported: 'Fitur berbagi tidak didukung di browser ini.',
-    shareError: 'Gagal membagikan slip gaji.',
 
     // Owner Mode
     ownerAccess: 'Akses Pemilik',
-    ownerAccessLogin: 'Login Akses Developer',
-    enterAccessCode: 'Masukkan Kode Akses',
+    ownerAccessLogin: 'Login Akses Pemilik',
+    enterAccessCode: 'Masukkan kode akses pemilik untuk membuka panel pengembang.',
     accessCode: 'Kode Akses',
-    enter: 'Masuk',
     invalidCode: 'Kode akses tidak valid.',
-    ownerPanel: 'Panel Developer',
-    ownerPanelDesc: 'Pengaturan ini untuk pemilik aplikasi dan dapat memengaruhi fungsionalitas inti. Gunakan dengan hati-hati.',
+    enter: 'Masuk',
+    ownerPanel: 'Panel Pemilik',
+    ownerPanelDesc: 'Panel ini berisi pengaturan sensitif. Perubahan di sini dapat memengaruhi seluruh aplikasi.',
     adSettings: 'Pengaturan Iklan',
-    admobBannerId: 'ID Banner AdMob',
+    admobBannerId: 'ID Banner AdMob (Web)',
     admobBannerIdPlaceholder: 'ca-app-pub-xxxxxxxx/xxxxxxxx',
-    showAds: 'Tampilkan Iklan Banner',
+    showAds: 'Tampilkan Iklan',
     saveAdSettings: 'Simpan Pengaturan Iklan',
-    adSettingsSaved: 'Pengaturan iklan disimpan. Muat ulang aplikasi untuk melihat perubahan.',
+    adSettingsSaved: 'Pengaturan iklan telah disimpan.',
     dangerZone: 'Zona Berbahaya',
-    dangerZoneDesc: 'Tindakan ini tidak dapat dibatalkan. Pastikan Anda benar-benar yakin sebelum melanjutkan.',
+    dangerZoneDesc: 'Tindakan di bawah ini tidak dapat diurungkan dan akan menghapus semua data pengguna yang tersimpan di peramban ini.',
     clearAllData: 'Hapus Semua Data Aplikasi',
-    clearAllDataConfirm: 'PERINGATAN! Anda akan menghapus SEMUA data untuk SEMUA pengguna dari perangkat ini. Tindakan ini tidak dapat dibatalkan. Apakah Anda benar-benar yakin?',
+    clearAllDataConfirm: 'APAKAH ANDA BENAR-benar YAKIN? Ini akan menghapus semua karyawan, tarif, log, dan riwayat dari setiap akun pengguna di perangkat ini. Tindakan ini tidak dapat dibatalkan.',
     dataCleared: 'Semua data aplikasi telah dihapus.',
-    logoutOwnerMode: 'Keluar dari Mode Developer',
-  }
+    logoutOwnerMode: 'Keluar dari Mode Pemilik',
+  },
 };
 
+// 2. Create Context and Provider
 type Language = 'en' | 'id';
-
 interface I18nContextType {
-    language: Language;
-    setLanguage: (lang: Language) => void;
-    t: (key: string, replacements?: Record<string, string | number>) => string;
-    formatCurrency: (amount: number) => string;
-    formatDate: (dateString: string, options?: Intl.DateTimeFormatOptions) => string;
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: keyof typeof translations.en, options?: Record<string, string | number>) => string;
+  formatCurrency: (amount: number) => string;
+  formatDate: (dateString: string) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-export const useI18n = () => {
-    const context = useContext(I18nContext);
-    if (!context) {
-        throw new Error('useI18n must be used within an I18nProvider');
+export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguageState] = useState<Language>(() => {
+    // Check local storage or default to browser language
+    const storedLang = localStorage.getItem('crewledger_language');
+    if (storedLang === 'en' || storedLang === 'id') {
+      return storedLang;
     }
-    return context;
+    return navigator.language.startsWith('id') ? 'id' : 'en';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('crewledger_language', language);
+  }, [language]);
+  
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+  };
+
+  const t = useCallback((key: keyof typeof translations.en, options?: Record<string, string | number>): string => {
+    let translation = translations[language][key] || translations.en[key] || key;
+    if (options) {
+        Object.keys(options).forEach(optKey => {
+            translation = translation.replace(`{{${optKey}}}`, String(options[optKey]));
+        });
+    }
+    return translation;
+  }, [language]);
+
+  const formatCurrency = useCallback((amount: number): string => {
+      const options = {
+        style: 'currency',
+        currency: language === 'id' ? 'IDR' : 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      };
+      // For Indonesian Rupiah, it's common to not have decimal places.
+      if (language === 'id') {
+          options.minimumFractionDigits = 0;
+          options.maximumFractionDigits = 0;
+      }
+      return new Intl.NumberFormat(language === 'id' ? 'id-ID' : 'en-US', options).format(amount);
+  }, [language]);
+
+  const formatDate = useCallback((dateString: string): string => {
+    // Input is YYYY-MM-DD. We need to create a Date object in UTC to avoid timezone issues.
+    const date = new Date(dateString + 'T00:00:00Z');
+    return new Intl.DateTimeFormat(language === 'id' ? 'id-ID' : 'en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC' // Explicitly use UTC
+    }).format(date);
+  }, [language]);
+
+
+  const value = useMemo(() => ({ language, setLanguage, t, formatCurrency, formatDate }), [language, t, formatCurrency, formatDate]);
+
+  // FIX: Replaced JSX with React.createElement to fix syntax errors in a .ts file.
+  // The file uses React component logic but has a .ts extension, which does not process JSX by default.
+  return React.createElement(I18nContext.Provider, { value: value }, children);
 };
 
-export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [language, setLanguageState] = useState<Language>('id'); // Default to Indonesian for review
-
-    useEffect(() => {
-        // 1. Check localStorage for a saved language preference
-        const savedLang = localStorage.getItem('crewledger_language') as Language | null;
-        if (savedLang && ['en', 'id'].includes(savedLang)) {
-            setLanguageState(savedLang);
-            return;
-        }
-
-        // 2. If no preference, detect based on IP (best effort)
-        fetch('https://ip-api.com/json/?fields=countryCode')
-            .then(response => response.json())
-            .then(data => {
-                const lang: Language = data.countryCode === 'ID' ? 'id' : 'en';
-                setLanguageState(lang);
-                localStorage.setItem('crewledger_language', lang);
-            })
-            .catch(() => {
-                // On error, we rely on the default state which is now 'id'
-                 const lang: Language = 'id';
-                 setLanguageState(lang);
-                 localStorage.setItem('crewledger_language', lang);
-            });
-    }, []);
-
-    const setLanguage = useCallback((lang: Language) => {
-        setLanguageState(lang);
-        localStorage.setItem('crewledger_language', lang);
-    }, []);
-
-    const t = useCallback((key: string, replacements: Record<string, string | number> = {}) => {
-        // Fallback logic: if a key doesn't exist in the current language, use the English version.
-        let translation = translations[language][key as keyof typeof translations.en] || translations.en[key as keyof typeof translations.en] || key;
-        Object.keys(replacements).forEach(placeholder => {
-            translation = translation.replace(new RegExp(`{{${placeholder}}}`, 'g'), String(replacements[placeholder]));
-        });
-        return translation;
-    }, [language]);
-    
-    const formatCurrency = useCallback((amount: number) => {
-        const locale = language === 'id' ? 'id-ID' : 'en-US';
-        const currency = language === 'id' ? 'IDR' : 'USD';
-        const options: Intl.NumberFormatOptions = {
-            style: 'currency',
-            currency,
-        };
-        // For IDR, we don't want decimals. For USD, we do by default.
-        if (currency === 'IDR') {
-            options.minimumFractionDigits = 0;
-            options.maximumFractionDigits = 0;
-        }
-
-        return new Intl.NumberFormat(locale, options).format(amount);
-    }, [language]);
-
-    const formatDate = useCallback((dateString: string, options?: Intl.DateTimeFormatOptions) => {
-        const locale = language === 'id' ? 'id-ID' : 'en-US';
-        const defaultOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
-
-        // The Intl.DateTimeFormat API throws an error if style options (like dateStyle)
-        // are mixed with component options (like day, month, year).
-        // This logic prevents that by using only the passed options if they include a style,
-        // otherwise it merges them with the defaults.
-        const finalOptions = (options && (options.dateStyle || options.timeStyle))
-            ? options
-            : { ...defaultOptions, ...options };
-
-        // Ensure we're not affected by timezone shifts by interpreting the date as UTC
-        const date = new Date(dateString);
-        const utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        return utcDate.toLocaleString(locale, finalOptions);
-    }, [language]);
-
-    const value = useMemo(() => ({ language, setLanguage, t, formatCurrency, formatDate }), 
-        [language, setLanguage, t, formatCurrency, formatDate]
-    );
-
-    // FIX: Replaced JSX with React.createElement.
-    // The file has a .ts extension, which typically does not have JSX parsing enabled.
-    // This was causing the compiler to interpret the '<' and '>' characters as
-    // comparison operators, leading to syntax errors.
-    return React.createElement(I18nContext.Provider, { value: value }, children);
+// 3. Custom Hook for easy access
+export const useI18n = (): I18nContextType => {
+  const context = useContext(I18nContext);
+  if (context === undefined) {
+    throw new Error('useI18n must be used within an I18nProvider');
+  }
+  return context;
 };
