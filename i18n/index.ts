@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 
 // 1. Define Translation Data
@@ -13,6 +14,27 @@ const translations = {
     saveChanges: 'Save Changes',
     confirmDeletionTitle: 'Confirm Deletion',
     confirmDeletionMessage: 'Are you sure you want to delete this item? This action cannot be undone.',
+    exit: 'Exit',
+
+    // Auth
+    login: 'Login',
+    register: 'Register',
+    logout: 'Logout',
+    email: 'Email',
+    password: 'Password',
+    username: 'Username',
+    contactNumber: 'Contact Number',
+    contactNumberOptional: 'Contact Number (Optional)',
+    registerHere: 'Register here',
+    loginHere: 'Login here',
+    authNoAccount: "Don't have an account?",
+    authHaveAccount: 'Already have an account?',
+    authInvalidCredentials: 'Invalid email or password.',
+    authPasswordTooShort: 'Password must be at least 8 characters long.',
+    authEmailExists: 'An account with this email already exists.',
+    authUsernameExists: 'This username is already taken.',
+    authOr: 'or',
+    authContinueAsGuest: 'Continue as Guest',
 
     // Tabs
     dailyLog: 'Daily Log',
@@ -83,6 +105,9 @@ const translations = {
     noPayslipHistory: 'No saved payslip history.',
 
     // Settings
+    profileAndSettings: 'Profile & Settings',
+    profile: 'User Profile',
+    guestUser: 'Guest User',
     aboutThisApp: 'About This App',
     aboutText: 'This application was created to simplify the recording and calculation of piece-rate wages with an equal-sharing system.',
     viewRules: 'View Rules & Privacy Policy',
@@ -126,6 +151,11 @@ const translations = {
     settingsReset: 'Custom settings have been reset.',
     confirmResetSettings: 'Are you sure you want to reset all custom settings to their default values?',
     
+    // Guest Mode
+    guestMode: 'Guest Mode',
+    registerToSavePrompt: 'You are in Guest Mode. Register an account to save your data and access it from any device.',
+    registerNow: 'Register Now',
+
     // Policy Modal
     policyTitle: 'Rules & Privacy Policy',
     policyWelcome: 'Welcome! Before using the app, please read and agree to the following points:',
@@ -171,6 +201,27 @@ const translations = {
     saveChanges: 'Simpan Perubahan',
     confirmDeletionTitle: 'Konfirmasi Penghapusan',
     confirmDeletionMessage: 'Apakah Anda yakin ingin menghapus item ini? Tindakan ini tidak dapat dibatalkan.',
+    exit: 'Keluar',
+    
+    // Auth
+    login: 'Masuk',
+    register: 'Daftar',
+    logout: 'Keluar',
+    email: 'Email',
+    password: 'Kata Sandi',
+    username: 'Nama Pengguna',
+    contactNumber: 'Nomor Kontak',
+    contactNumberOptional: 'Nomor Kontak (Opsional)',
+    registerHere: 'Daftar di sini',
+    loginHere: 'Masuk di sini',
+    authNoAccount: 'Belum punya akun?',
+    authHaveAccount: 'Sudah punya akun?',
+    authInvalidCredentials: 'Email atau kata sandi salah.',
+    authPasswordTooShort: 'Kata sandi minimal harus 8 karakter.',
+    authEmailExists: 'Akun dengan email ini sudah ada.',
+    authUsernameExists: 'Nama pengguna ini sudah digunakan.',
+    authOr: 'atau',
+    authContinueAsGuest: 'Lanjutkan sebagai Tamu',
     
     // Tabs
     dailyLog: 'Catatan Harian',
@@ -241,6 +292,9 @@ const translations = {
     noPayslipHistory: 'Tidak ada riwayat slip gaji yang tersimpan.',
 
     // Settings
+    profileAndSettings: 'Profil & Pengaturan',
+    profile: 'Profil Pengguna',
+    guestUser: 'Pengguna Tamu',
     aboutThisApp: 'Tentang Aplikasi Ini',
     aboutText: 'Aplikasi ini dibuat untuk menyederhanakan pencatatan dan penghitungan upah borongan dengan sistem bagi rata.',
     viewRules: 'Lihat Aturan & Kebijakan Privasi',
@@ -283,6 +337,11 @@ const translations = {
     resetSettings: 'Reset ke Default',
     settingsReset: 'Pengaturan kustom telah di-reset.',
     confirmResetSettings: 'Anda yakin ingin mengembalikan semua pengaturan kustom ke nilai default?',
+
+    // Guest Mode
+    guestMode: 'Mode Tamu',
+    registerToSavePrompt: 'Anda berada dalam Mode Tamu. Daftarkan akun untuk menyimpan data Anda dan mengaksesnya dari perangkat mana pun.',
+    registerNow: 'Daftar Sekarang',
 
     // Policy Modal
     policyTitle: 'Aturan & Kebijakan Privasi',

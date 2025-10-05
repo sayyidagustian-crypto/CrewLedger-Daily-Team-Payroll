@@ -58,3 +58,12 @@ export interface AppConfig {
   appIcon: string; // base64 string
   admobBannerId: string;
 }
+
+export interface User {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string;
+  password: string; // In a real-world app, this should be a hash.
+  contactNumber?: string;
+}

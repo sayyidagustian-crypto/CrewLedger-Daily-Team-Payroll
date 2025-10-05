@@ -1,10 +1,10 @@
 
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import type { Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, AppConfig } from './types';
+import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, AppConfig } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import { PayslipPreview } from './components/PayslipPreview';
-import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon } from './components/icons';
+import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon, LogoutIcon, AtSymbolIcon, LockClosedIcon, IdentificationIcon, PhoneIcon, InformationCircleIcon } from './components/icons';
 import { useI18n } from './i18n';
 import { remoteConfigService } from './services/remoteConfig';
 import { payslipService } from './services/payslipService';
@@ -14,16 +14,16 @@ type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' 
 
 
 // =================================================================
-// MAIN APP COMPONENT
+// MAIN APP COMPONENT (The original App.tsx content, now for authenticated users)
 // =================================================================
-const App: React.FC = () => {
+const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: boolean; }> = ({ currentUser, onLogout, isGuest }) => {
     const { t, language, setLanguage, formatDate, formatCurrency } = useI18n();
 
-    // --- STATE MANAGEMENT ---
-    const [employees, setEmployees] = useLocalStorage<Employee[]>('employees', []);
-    const [pieceRates, setPieceRates] = useLocalStorage<PieceRate[]>('pieceRates', []);
-    const [dailyLogs, setDailyLogs] = useLocalStorage<DailyGroupLog[]>('dailyLogs', []);
-    const [payslips, setPayslips] = useLocalStorage<Payslip[]>('payslips', []);
+    // --- STATE MANAGEMENT (Scoped to current user) ---
+    const [employees, setEmployees] = useLocalStorage<Employee[]>(`employees_${currentUser.id}`, []);
+    const [pieceRates, setPieceRates] = useLocalStorage<PieceRate[]>(`pieceRates_${currentUser.id}`, []);
+    const [dailyLogs, setDailyLogs] = useLocalStorage<DailyGroupLog[]>(`dailyLogs_${currentUser.id}`, []);
+    const [payslips, setPayslips] = useLocalStorage<Payslip[]>(`payslips_${currentUser.id}`, []);
     const [isPolicyAgreed, setIsPolicyAgreed] = useLocalStorage<boolean>('policyAgreed', false);
 
     const [activeTab, setActiveTab] = useState<ActiveTab>('dailyLog');
@@ -32,6 +32,10 @@ const App: React.FC = () => {
     const [modal, setModal] = useState<{ type: ModalType; data?: any }>({ type: null });
     const [configLoaded, setConfigLoaded] = useState(false);
     const [isMobileView, setIsMobileView] = useState(window.innerWidth < 1024);
+    const [showGuestBanner, setShowGuestBanner] = useState(() => {
+        // Use sessionStorage to only show the banner once per session
+        return isGuest && !sessionStorage.getItem('guestBannerDismissed');
+    });
 
     // --- DERIVED STATE ---
     const activeEmployees = useMemo(() => employees.filter(e => e.status === 'Active'), [employees]);
@@ -59,6 +63,10 @@ const App: React.FC = () => {
         });
     }, []);
 
+    const handleDismissGuestBanner = () => {
+        sessionStorage.setItem('guestBannerDismissed', 'true');
+        setShowGuestBanner(false);
+    };
 
     const handleGeneratePayslip = useCallback((employeeId: string, period: string, allowance: number, deduction: number) => {
         const employee = employees.find(e => e.id === employeeId);
@@ -688,38 +696,35 @@ const App: React.FC = () => {
 
     const Settings = () => {
         const fileRestoreRef = useRef<HTMLInputElement>(null);
-        const [isOwnerMode, setIsOwnerMode] = useLocalStorage<boolean>('isOwnerMode', false);
-        const [appConfig, setAppConfig] = useLocalStorage<AppConfig>('appConfig', {
+        const [isOwnerMode, setIsOwnerMode] = useLocalStorage<boolean>(`isOwnerMode_${currentUser.id}`, false);
+        const [appConfig, setAppConfig] = useLocalStorage<AppConfig>(`appConfig_${currentUser.id}`, {
             appName: '',
             appDescription: '',
             appIcon: '',
             admobBannerId: ''
         });
-        const [usedCodes, setUsedCodes] = useLocalStorage<string[]>('usedAdminCodes', []);
+        const [usedCodes, setUsedCodes] = useLocalStorage<string[]>(`usedAdminCodes_${currentUser.id}`, []);
         const [accessCode, setAccessCode] = useState('');
         
         const handleUnlockOwnerMode = () => {
             const code = accessCode.trim();
             const validAdminCodes = remoteConfigService.getTuningValue('admin_access_codes') || [];
     
-            // 1. Check if the code exists in the master list from remote config.
             if (!validAdminCodes.includes(code)) {
                 alert(t('ownerCodeInvalidError'));
                 setAccessCode('');
                 return;
             }
     
-            // 2. Check if the code has already been used on this device.
             if (usedCodes.includes(code)) {
                 alert(t('ownerCodeUsedError'));
                 setAccessCode('');
                 return;
             }
     
-            // Success: Unlock mode and add the code to the list of used codes for this device.
             setIsOwnerMode(true);
             setUsedCodes(prev => [...prev, code]);
-            setAccessCode(''); // Clear the code after successful use
+            setAccessCode('');
         };
     
         const handleConfigChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -755,7 +760,7 @@ const App: React.FC = () => {
                 const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(dataToBackup, null, 2))}`;
                 const link = document.createElement("a");
                 link.href = jsonString;
-                link.download = `crewledger_backup_${new Date().toISOString().split('T')[0]}.json`;
+                link.download = `crewledger_backup_${currentUser.username}_${new Date().toISOString().split('T')[0]}.json`;
                 link.click();
                  alert(t('dataExportedSuccess'));
             } catch (error) {
@@ -803,9 +808,19 @@ const App: React.FC = () => {
 
         return (
             <div className="space-y-8">
-                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('settings')}</h2>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('profileAndSettings')}</h2>
                 </div>
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold text-slate-800">{t('profile')}</h3>
+                    <div className="mt-4 space-y-2 text-slate-600">
+                        <div className="flex"><strong className="w-28">{t('fullName')}:</strong> <span>{currentUser.fullName}</span></div>
+                        <div className="flex"><strong className="w-28">{t('username')}:</strong> <span>{currentUser.username}</span></div>
+                        <div className="flex"><strong className="w-28">{t('email')}:</strong> <span>{currentUser.email}</span></div>
+                        <div className="flex"><strong className="w-28">{t('contactNumber')}:</strong> <span>{currentUser.contactNumber || '-'}</span></div>
+                    </div>
+                </div>
+
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold text-slate-800">{t('languageAndCurrency')}</h3>
                     <p className="text-sm text-slate-500 mt-1">{t('languageAndCurrencyDesc')}</p>
@@ -936,7 +951,7 @@ const App: React.FC = () => {
     ];
     
     const SidebarContent = () => {
-        const [appConfig] = useLocalStorage<AppConfig>('appConfig', { appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
+        const [appConfig] = useLocalStorage<AppConfig>(`appConfig_${currentUser.id}`, { appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
 
         const AppIcon = () => {
             if (appConfig.appIcon) {
@@ -961,7 +976,7 @@ const App: React.FC = () => {
                     <AppIcon />
                     <div className="overflow-hidden">
                         <h1 className="text-xl font-bold text-white truncate">{appConfig.appName || t('appName')}</h1>
-                        <p className="text-sm text-slate-300 truncate">{appConfig.appDescription || t('appDescription')}</p>
+                        <p className="text-sm text-slate-300 truncate">{isGuest ? t('guestMode') : (appConfig.appDescription || t('appDescription'))}</p>
                     </div>
                 </div>
                 <nav className="flex-grow p-2">
@@ -988,6 +1003,16 @@ const App: React.FC = () => {
                         ))}
                     </ul>
                 </nav>
+                 <div className="p-2 mt-auto border-t border-slate-700">
+                    <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); onLogout(); }}
+                        className="flex items-center px-3 py-3 text-lg rounded-md text-slate-200 hover:bg-slate-600 hover:text-white transition-colors"
+                    >
+                        <LogoutIcon />
+                        <span>{isGuest ? t('exit') : t('logout')}</span>
+                    </a>
+                </div>
             </div>
         );
     };
@@ -1017,6 +1042,19 @@ const App: React.FC = () => {
                     </div>
                 </header>
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                     {showGuestBanner && (
+                        <div className="relative bg-indigo-100 text-indigo-800 p-4 rounded-lg mb-6 flex items-start animate-fade-in-down">
+                            <InformationCircleIcon className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
+                            <div className="flex-grow">
+                                <p className="font-semibold">{t('guestMode')}</p>
+                                <p className="text-sm">{t('registerToSavePrompt')}</p>
+                                <button onClick={onLogout} className="mt-2 text-sm font-bold text-indigo-600 hover:underline">{t('registerNow')}</button>
+                            </div>
+                            <button onClick={handleDismissGuestBanner} className="absolute top-2 right-2 text-indigo-500 hover:text-indigo-700">
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
                      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
                             {renderActiveTab()}
@@ -1038,6 +1076,221 @@ const App: React.FC = () => {
             )}
              {modal.type === 'policy' && <PolicyModal />}
         </div>
+    );
+};
+
+
+// =================================================================
+// LOGIN/REGISTER COMPONENT
+// =================================================================
+const LoginRegister: React.FC<{
+    users: User[];
+    onLogin: (user: User) => void;
+    onRegister: (newUser: User) => void;
+    onContinueAsGuest: () => void;
+}> = ({ users, onLogin, onRegister, onContinueAsGuest }) => {
+    const { t } = useI18n();
+    const [isLoginView, setIsLoginView] = useState(true);
+    const [error, setError] = useState('');
+
+    // Form state
+    const [fullName, setFullName] = useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [contactNumber, setContactNumber] = useState('');
+
+    const resetForm = () => {
+        setFullName('');
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setContactNumber('');
+        setError('');
+    };
+
+    const handleViewToggle = () => {
+        setIsLoginView(!isLoginView);
+        resetForm();
+    };
+
+    const handleLoginSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (user && user.password === password) {
+            onLogin(user);
+        } else {
+            setError(t('authInvalidCredentials'));
+        }
+    };
+
+    const handleRegisterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (password.length < 8) {
+            setError(t('authPasswordTooShort'));
+            return;
+        }
+        if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+            setError(t('authEmailExists'));
+            return;
+        }
+        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+            setError(t('authUsernameExists'));
+            return;
+        }
+
+        const newUser: User = {
+            id: Date.now().toString(),
+            fullName,
+            username,
+            email,
+            password,
+            contactNumber
+        };
+        onRegister(newUser);
+    };
+
+    const AppIcon = () => (
+        <div className="h-16 w-16 mx-auto mb-4 rounded-2xl bg-white p-1.5 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <rect width="100" height="100" rx="20" fill="#4f46e5"/>
+                <rect x="25" y="25" width="50" height="60" rx="5" fill="white"/>
+                <rect x="35" y="38" width="30" height="5" rx="2" fill="#a5b4fc"/>
+                <rect x="35" y="50" width="30" height="5" rx="2" fill="#c7d2fe"/>
+                <rect x="35" y="62" width="15" height="5" rx="2" fill="#a5b4fc"/>
+            </svg>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 font-sans">
+            <div className="max-w-md w-full mx-auto">
+                <AppIcon />
+                <h1 className="text-3xl font-bold text-center text-slate-800">{t('appName')}</h1>
+                <p className="text-center text-slate-500 mb-8">{t('appDescription')}</p>
+                
+                <div className="bg-white p-8 rounded-xl shadow-lg">
+                    <h2 className="text-2xl font-semibold text-center text-slate-700 mb-6">{isLoginView ? t('login') : t('register')}</h2>
+                    {error && <p className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4 text-sm">{error}</p>}
+
+                    <form onSubmit={isLoginView ? handleLoginSubmit : handleRegisterSubmit} className="space-y-4">
+                        {!isLoginView && (
+                             <>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <IdentificationIcon />
+                                    </span>
+                                    <input type="text" placeholder={t('fullName')} value={fullName} onChange={e => setFullName(e.target.value)} required className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900" />
+                                </div>
+                                 <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <UserCircleIcon className="h-5 w-5 text-slate-400" />
+                                    </span>
+                                    <input type="text" placeholder={t('username')} value={username} onChange={e => setUsername(e.target.value)} required className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900" />
+                                </div>
+                            </>
+                        )}
+                        <div className="relative">
+                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <AtSymbolIcon />
+                            </span>
+                            <input type="email" placeholder={t('email')} value={email} onChange={e => setEmail(e.target.value)} required className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900" />
+                        </div>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <LockClosedIcon />
+                            </span>
+                            <input type="password" placeholder={t('password')} value={password} onChange={e => setPassword(e.target.value)} required className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900" />
+                        </div>
+                         {!isLoginView && (
+                             <div className="relative">
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <PhoneIcon />
+                                </span>
+                                <input type="tel" placeholder={t('contactNumberOptional')} value={contactNumber} onChange={e => setContactNumber(e.target.value)} className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900" />
+                            </div>
+                         )}
+
+                        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                            {isLoginView ? t('login') : t('register')}
+                        </button>
+                    </form>
+
+                    <div className="flex items-center my-4">
+                        <div className="flex-grow border-t border-slate-300"></div>
+                        <span className="flex-shrink mx-4 text-slate-400 text-sm">{t('authOr')}</span>
+                        <div className="flex-grow border-t border-slate-300"></div>
+                    </div>
+                    
+                    <button onClick={onContinueAsGuest} className="w-full bg-slate-100 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-200 transition-colors">
+                        {t('authContinueAsGuest')}
+                    </button>
+                    
+                    <p className="text-center text-sm text-slate-500 mt-6">
+                        {isLoginView ? t('authNoAccount') : t('authHaveAccount')}{' '}
+                        <button onClick={handleViewToggle} className="font-semibold text-indigo-600 hover:underline">
+                             {isLoginView ? t('registerHere') : t('loginHere')}
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// =================================================================
+// AUTH GATE COMPONENT (The new top-level App)
+// =================================================================
+const GUEST_USER: User = {
+    id: 'guest_user',
+    fullName: 'Guest User',
+    username: 'guest',
+    email: 'guest@crewledger.app',
+    password: '',
+    contactNumber: ''
+};
+
+const App: React.FC = () => {
+    const [users, setUsers] = useLocalStorage<User[]>('users', []);
+    const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
+
+    const handleRegister = (newUser: User) => {
+        setUsers(prev => [...prev, newUser]);
+        setCurrentUser(newUser);
+    };
+    
+    const handleLogin = (user: User) => {
+        setCurrentUser(user);
+    };
+
+    const handleLogout = () => {
+        setCurrentUser(null);
+    };
+
+    const handleContinueAsGuest = () => {
+        setCurrentUser(GUEST_USER);
+    };
+
+    return (
+        <>
+            {currentUser ? (
+                <MainApp 
+                    currentUser={currentUser} 
+                    onLogout={handleLogout} 
+                    isGuest={currentUser.id === GUEST_USER.id}
+                />
+            ) : (
+                <LoginRegister 
+                    users={users} 
+                    onLogin={handleLogin} 
+                    onRegister={handleRegister}
+                    onContinueAsGuest={handleContinueAsGuest}
+                />
+            )}
+        </>
     );
 };
 
