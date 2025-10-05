@@ -32,7 +32,7 @@ const defaultConfig: RemoteConfig = {
     ad_unit_id: "ca-app-pub-3940256099942544/6300978111", // Default test ID
     default_rate: 0.95,
     globalNoticeMessage: "",
-    admin_access_codes: ["CODE-ALPHA-123", "CODE-BETA-456", "CODE-GAMMA-789"], // The one-time codes are now managed here
+    admin_access_codes: ["CODE-ALPHA-123", "CODE-BETA-456", "CODE-GAMMA-789", "1808"], // The one-time codes are now managed here
   },
 };
 
