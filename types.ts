@@ -51,3 +51,10 @@ export interface Payslip {
   netSalary: number;
   createdAt: string;
 }
+
+export interface AppConfig {
+  appName: string;
+  appDescription: string;
+  appIcon: string; // base64 string
+  admobBannerId: string;
+}

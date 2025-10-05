@@ -1,15 +1,15 @@
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import type { Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry } from './types';
+import type { Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, AppConfig } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import { PayslipPreview } from './components/PayslipPreview';
-import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, InformationCircleIcon, LogoutIcon, LoginIcon, BugAntIcon, SparklesIcon, ShieldCheckIcon, MenuIcon, GoogleDriveIcon } from './components/icons';
+import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon } from './components/icons';
 import { useI18n } from './i18n';
 import { remoteConfigService } from './services/remoteConfig';
 import { payslipService } from './services/payslipService';
 
 type ActiveTab = 'dailyLog' | 'generator' | 'employees' | 'rates' | 'history' | 'settings';
-type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy' | 'reportProblem';
+type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy';
 
 
 // =================================================================
@@ -19,11 +19,11 @@ const App: React.FC = () => {
     const { t, language, setLanguage, formatDate, formatCurrency } = useI18n();
 
     // --- STATE MANAGEMENT ---
-    const [employees, setEmployees] = useLocalStorage<Employee[]>('employees', [], 'guest');
-    const [pieceRates, setPieceRates] = useLocalStorage<PieceRate[]>('pieceRates', [], 'guest');
-    const [dailyLogs, setDailyLogs] = useLocalStorage<DailyGroupLog[]>('dailyLogs', [], 'guest');
-    const [payslips, setPayslips] = useLocalStorage<Payslip[]>('payslips', [], 'guest');
-    const [isPolicyAgreed, setIsPolicyAgreed] = useLocalStorage<boolean>('policyAgreed', false, 'guest');
+    const [employees, setEmployees] = useLocalStorage<Employee[]>('employees', []);
+    const [pieceRates, setPieceRates] = useLocalStorage<PieceRate[]>('pieceRates', []);
+    const [dailyLogs, setDailyLogs] = useLocalStorage<DailyGroupLog[]>('dailyLogs', []);
+    const [payslips, setPayslips] = useLocalStorage<Payslip[]>('payslips', []);
+    const [isPolicyAgreed, setIsPolicyAgreed] = useLocalStorage<boolean>('policyAgreed', false);
 
     const [activeTab, setActiveTab] = useState<ActiveTab>('dailyLog');
     const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
@@ -687,6 +687,59 @@ const App: React.FC = () => {
 
     const Settings = () => {
         const fileRestoreRef = useRef<HTMLInputElement>(null);
+        const [isOwnerMode, setIsOwnerMode] = useLocalStorage<boolean>('isOwnerMode', false);
+        const [appConfig, setAppConfig] = useLocalStorage<AppConfig>('appConfig', {
+            appName: '',
+            appDescription: '',
+            appIcon: '',
+            admobBannerId: ''
+        });
+        const [usedCodes, setUsedCodes] = useLocalStorage<string[]>('usedAdminCodes', []);
+        const [accessCode, setAccessCode] = useState('');
+
+        // This is the one-time code you can ask AI Studio to change.
+        const ADMIN_CODE = 'ADMIN-CODE-001';
+        
+        const handleUnlockOwnerMode = () => {
+            if (accessCode.trim() !== ADMIN_CODE) {
+                alert(t('ownerCodeInvalidError'));
+                setAccessCode('');
+                return;
+            }
+    
+            if (usedCodes.includes(ADMIN_CODE)) {
+                alert(t('ownerCodeUsedError'));
+                setAccessCode('');
+                return;
+            }
+    
+            // Success
+            setIsOwnerMode(true);
+            setUsedCodes(prev => [...prev, ADMIN_CODE]);
+            setAccessCode(''); // Clear the code after successful use
+        };
+    
+        const handleConfigChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setAppConfig(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        };
+    
+        const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setAppConfig(prev => ({...prev, appIcon: reader.result as string}));
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        
+        const resetConfig = () => {
+            if (confirm(t('confirmResetSettings'))) {
+                setAppConfig({ appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
+                alert(t('settingsReset'));
+            }
+        };
 
         const handleBackup = () => {
             try {
@@ -785,21 +838,75 @@ const App: React.FC = () => {
                         <label htmlFor="restoreFile" className="cursor-pointer bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center w-max"><UploadIcon />{t('restoreFromFile')}</label>
                     </div>
                 </div>
-                
-                 <div className="bg-white p-6 rounded-lg shadow-md">
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
                      <h3 className="text-lg font-semibold text-slate-800">{t('aboutThisApp')}</h3>
                      <p className="text-sm text-slate-600 mt-2">{t('aboutText')}</p>
-
-                     <h4 className="text-md font-semibold text-slate-700 mt-6">{t('acknowledgements')}</h4>
-                     <ul className="list-disc list-inside text-sm text-slate-600 mt-2 space-y-1">
-                        <li>{t('ackGod')}</li>
-                        <li>{t('ackGoogle')}</li>
-                        <li>{t('ackBrand')}</li>
-                        <li>{t('ackContributors')}</li>
-                     </ul>
-
                      <button onClick={() => openModal('policy')} className="mt-6 text-sm text-indigo-600 hover:underline">{t('viewRules')}</button>
                 </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold text-slate-800">{t('ownerMode')}</h3>
+                    <p className="text-sm text-slate-500 mt-1">{t('ownerModeDesc')}</p>
+                    <div className="mt-4">
+                        {isOwnerMode ? (
+                            <button onClick={() => setIsOwnerMode(false)} className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700">{t('exitOwnerMode')}</button>
+                        ) : (
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="text"
+                                    value={accessCode}
+                                    onChange={(e) => setAccessCode(e.target.value)}
+                                    placeholder={t('ownerCodePlaceholder')}
+                                    className="flex-grow px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900"
+                                    aria-label={t('ownerCodePlaceholder')}
+                                />
+                                <button onClick={handleUnlockOwnerMode} className="bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700">{t('unlock')}</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {isOwnerMode && (
+                    <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500 animate-fade-in">
+                        <h3 className="text-xl font-bold text-slate-800 mb-4">{t('ownerSettings')}</h3>
+                        <div className="space-y-6">
+                            <div>
+                                <h4 className="text-lg font-semibold text-slate-700">{t('appCustomization')}</h4>
+                                <div className="mt-4 space-y-4">
+                                    <div>
+                                        <label htmlFor="appName" className="block text-sm font-medium text-slate-700">{t('customizeAppName')}</label>
+                                        <input type="text" name="appName" id="appName" value={appConfig.appName} onChange={handleConfigChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder={t('appName')} />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="appDescription" className="block text-sm font-medium text-slate-700">{t('customizeAppDesc')}</label>
+                                        <textarea name="appDescription" id="appDescription" value={appConfig.appDescription} onChange={handleConfigChange} rows={2} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder={t('appDescription')} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700">{t('customizeAppIcon')}</label>
+                                        <div className="mt-1 flex items-center space-x-4">
+                                            {appConfig.appIcon ? <img src={appConfig.appIcon} alt="preview" className="h-16 w-16 object-cover rounded-md bg-slate-100" /> : <div className="h-16 w-16 bg-slate-100 rounded-md flex items-center justify-center text-slate-400">Preview</div> }
+                                            <input type="file" accept="image/*" onChange={handleIconUpload} className="hidden" id="icon-upload" />
+                                            <label htmlFor="icon-upload" className="cursor-pointer bg-white py-2 px-3 border border-slate-300 rounded-md shadow-sm text-sm leading-4 font-medium text-slate-700 hover:bg-slate-50">{t('upload')}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-semibold text-slate-700">{t('admobSettings')}</h4>
+                                <p className="text-sm text-slate-500 mt-1">{t('admobSettingsDesc')}</p>
+                                <div className="mt-4">
+                                    <label htmlFor="admobBannerId" className="block text-sm font-medium text-slate-700">{t('admobBannerId')}</label>
+                                    <input type="text" name="admobBannerId" id="admobBannerId" value={appConfig.admobBannerId} onChange={handleConfigChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder="ca-app-pub-..." />
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-3 border-t pt-4">
+                                <button onClick={resetConfig} type="button" className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('resetSettings')}</button>
+                                <button onClick={() => alert(t('settingsSaved'))} type="button" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"><SaveIcon /> {t('saveSettings')}</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
@@ -825,38 +932,62 @@ const App: React.FC = () => {
         { id: 'settings', label: t('settings'), icon: <CogIcon /> },
     ];
     
-    const SidebarContent = () => (
-         <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-slate-700">
-                <h1 className="text-2xl font-bold text-white">{t('appName')}</h1>
-                <p className="text-sm text-slate-300">{t('appDescription')}</p>
+    const SidebarContent = () => {
+        const [appConfig] = useLocalStorage<AppConfig>('appConfig', { appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
+
+        const AppIcon = () => {
+            if (appConfig.appIcon) {
+                return <img src={appConfig.appIcon} alt="App Icon" className="h-12 w-12 rounded-lg mr-3 object-cover flex-shrink-0" />;
+            }
+            return (
+                <div className="h-12 w-12 mr-3 rounded-lg bg-white p-1 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                        <rect width="100" height="100" rx="20" fill="#4f46e5"/>
+                        <rect x="25" y="25" width="50" height="60" rx="5" fill="white"/>
+                        <rect x="35" y="38" width="30" height="5" rx="2" fill="#a5b4fc"/>
+                        <rect x="35" y="50" width="30" height="5" rx="2" fill="#c7d2fe"/>
+                        <rect x="35" y="62" width="15" height="5" rx="2" fill="#a5b4fc"/>
+                    </svg>
+                </div>
+            );
+        };
+
+        return (
+            <div className="flex flex-col h-full">
+                <div className="p-4 border-b border-slate-700 flex items-center">
+                    <AppIcon />
+                    <div className="overflow-hidden">
+                        <h1 className="text-xl font-bold text-white truncate">{appConfig.appName || t('appName')}</h1>
+                        <p className="text-sm text-slate-300 truncate">{appConfig.appDescription || t('appDescription')}</p>
+                    </div>
+                </div>
+                <nav className="flex-grow p-2">
+                    <ul>
+                        {navItems.map(item => (
+                            <li key={item.id}>
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveTab(item.id);
+                                        if(isMobileView) setSidebarOpen(false);
+                                    }}
+                                    className={`flex items-center px-3 py-3 text-lg rounded-md transition-colors ${
+                                        activeTab === item.id 
+                                        ? 'bg-indigo-700 text-white' 
+                                        : 'text-slate-200 hover:bg-slate-600 hover:text-white'
+                                    }`}
+                                >
+                                    <div className="w-5 h-5 mr-3 flex items-center justify-center">{item.icon}</div>
+                                    <span>{item.label}</span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
             </div>
-            <nav className="flex-grow p-2">
-                <ul>
-                    {navItems.map(item => (
-                        <li key={item.id}>
-                            <a
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setActiveTab(item.id);
-                                    if(isMobileView) setSidebarOpen(false);
-                                }}
-                                className={`flex items-center px-3 py-3 text-lg rounded-md transition-colors ${
-                                    activeTab === item.id 
-                                    ? 'bg-indigo-700 text-white' 
-                                    : 'text-slate-200 hover:bg-slate-600 hover:text-white'
-                                }`}
-                            >
-                                <div className="w-5 h-5 mr-3 flex items-center justify-center">{item.icon}</div>
-                                <span>{item.label}</span>
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="flex h-screen bg-slate-100 font-sans">

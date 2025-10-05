@@ -87,52 +87,14 @@ export const ShareIcon = () => (
     </svg>
 );
 
-export const InformationCircleIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-    </svg>
-);
-
-export const LogoutIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-    </svg>
-);
-
-export const LoginIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0110.5 3h6a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0116.5 21h-6a2.25 2.25 0 01-2.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H15" />
-    </svg>
-);
-
-export const BugAntIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.412 15.655 9.75 21.75l3.745-4.012M9.257 13.5H3.75l2.659-2.849m2.048-2.194L14.25 2.25 12 10.5h8.25l-4.707 5.043M8.457 8.457L3 3m5.457 5.457a.75.75 0 0 1-1.06 0l-2.122-2.122a.75.75 0 0 1 0-1.061l2.122-2.122a.75.75 0 0 1 1.06 0l2.122 2.122a.75.75 0 0 1 0 1.06l-2.122 2.122Zm6.836 6.836-3.746 4.012-1.663-6.095m13.442-2.749-2.66-2.848-2.047-2.194-4.5 8.25 1.664 6.095 3.745-4.012M18.543 8.457l5.457-5.457-5.457 5.457a.75.75 0 0 1-1.06 0l-2.122-2.122a.75.75 0 0 1 0-1.061l2.122-2.122a.75.75 0 0 1 1.06 0l2.122 2.122a.75.75 0 0 1 0 1.06l-2.122 2.122Z" />
-    </svg>
-);
-
 export const SparklesIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.5l-.648-1.938a3.375 3.375 0 00-2.456-2.456L11.25 18l1.938-.648a3.375 3.375 0 002.456-2.456L16.25 13.5l.648 1.938a3.375 3.375 0 002.456 2.456L21 18l-1.938.648a3.375 3.375 0 00-2.456 2.456z" />
     </svg>
 );
 
-export const ShieldCheckIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5.002 12.053 12.053 0 0110 18.455a12.053 12.053 0 017.834-13.453A11.954 11.954 0 0110 1.944zM9 13.099l-3.3-3.3a1 1 0 011.414-1.414l1.886 1.886 3.886-3.886a1 1 0 111.414 1.414L9 13.099z" clipRule="evenodd" />
-    </svg>
-);
-
 export const MenuIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-);
-
-export const GoogleDriveIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M0.022 15.531L7.545 2.41L15.429 15.5H8.381L0.022 15.531Z" fill="#3777E3"></path>
-        <path d="M15.86 15.5L7.976 2.411L11.737 9.043L19.62 22.133L15.86 15.5Z" fill="#FFC107"></path>
-        <path d="M8.381 15.531H23.978L16.455 2.41L8.381 15.531Z" fill="#34A853"></path>
     </svg>
 );

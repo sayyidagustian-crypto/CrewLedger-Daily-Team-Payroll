@@ -22,14 +22,14 @@ class PayslipService {
             return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
         });
 
-        const payslipLogs: PayslipLogEntry[] = relevantLogs.flatMap(dayLog => {
-            return dayLog.tasks.map(task => ({
+        const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
+            return {
                 date: dayLog.date,
-                taskName: task.taskName,
-                totalDailyGross: task.subTotal,
+                taskName: dayLog.tasks.map(t => t.taskName).join(', '),
+                totalDailyGross: dayLog.totalGrossEarnings,
                 workersPresent: dayLog.presentEmployeeIds.length,
                 yourEarning: dayLog.individualEarnings
-            }));
+            };
         });
         
         const grossSalary = relevantLogs.reduce((total, log) => total + log.individualEarnings, 0);
@@ -75,14 +75,14 @@ class PayslipService {
             const grossSalary = relevantLogs.reduce((total, log) => total + log.individualEarnings, 0);
     
             if (grossSalary > 0) {
-                 const payslipLogs: PayslipLogEntry[] = relevantLogs.flatMap(dayLog => {
-                    return dayLog.tasks.map(task => ({
+                 const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
+                    return {
                         date: dayLog.date,
-                        taskName: task.taskName,
-                        totalDailyGross: task.subTotal,
+                        taskName: dayLog.tasks.map(t => t.taskName).join(', '),
+                        totalDailyGross: dayLog.totalGrossEarnings,
                         workersPresent: dayLog.presentEmployeeIds.length,
                         yourEarning: dayLog.individualEarnings
-                    }));
+                    };
                 });
 
                 const payslip: Payslip = {
