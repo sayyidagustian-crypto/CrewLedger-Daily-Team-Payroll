@@ -1,9 +1,13 @@
-const CACHE_NAME = 'gaji-borongan-v4';
+const CACHE_NAME = 'gaji-borongan-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/index.tsx',
   '/icon.svg',
-  '/manifest.json'
+  '/manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
 ];
 
 // Install event: open cache and add assets
@@ -11,7 +15,13 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Opened cache and caching assets');
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Use addAll to cache all assets, but handle potential individual failures gracefully if needed
+      const promises = ASSETS_TO_CACHE.map(url => {
+        return cache.add(url).catch(err => {
+          console.warn(`Failed to cache ${url}:`, err);
+        });
+      });
+      return Promise.all(promises);
     })
   );
   self.skipWaiting();
@@ -44,8 +54,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       // If we have a cached response, return it.
+      if (response) {
+        return response;
+      }
       // Otherwise, fetch from the network.
-      return response || fetch(event.request);
+      return fetch(event.request).then(networkResponse => {
+        // Optional: Cache new requests on the fly
+        // Be careful with this, especially with opaque responses from CDNs (no-cors)
+        return networkResponse;
+      });
     })
   );
 });
