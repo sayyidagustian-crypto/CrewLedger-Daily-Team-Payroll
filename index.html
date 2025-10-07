@@ -9,18 +9,18 @@
     <!-- SEO Meta Tags -->
     <meta name="description" content="Aplikasi profesional untuk mengelola, menghitung, dan membuat slip gaji harian untuk tim borongan Anda. CrewLedger memudahkan manajemen payroll, pencatatan kerja harian, dan pembuatan slip gaji otomatis.">
     <meta name="keywords" content="slip gaji, gaji borongan, payroll, payslip, aplikasi gaji, manajemen kru, upah harian, crewledger, daily payroll, piece-rate">
-    <link rel="canonical" href="https://aistudio.google.com/app/creations/aistudio-gaji-borongan-project" />
+    <link rel="canonical" href="https://crewledger.netlify.app/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aistudio.google.com/app/creations/aistudio-gaji-borongan-project">
+    <meta property="og:url" content="https://crewledger.netlify.app/">
     <meta property="og:title" content="CrewLedger: Aplikasi Slip Gaji Harian Borongan Otomatis">
     <meta property="og:description" content="Aplikasi profesional untuk mengelola, menghitung, dan membuat slip gaji harian untuk tim borongan Anda.">
     <meta property="og:image" content="/icon.svg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
-    <meta property="twitter:url" content="https://aistudio.google.com/app/creations/aistudio-gaji-borongan-project">
+    <meta property="twitter:url" content="https://crewledger.netlify.app/">
     <meta property="twitter:title" content="CrewLedger: Aplikasi Slip Gaji Harian Borongan Otomatis">
     <meta property="twitter:description" content="Aplikasi profesional untuk mengelola, menghitung, dan membuat slip gaji harian untuk tim borongan Anda.">
     <meta property="twitter:image" content="/icon.svg">
@@ -31,6 +31,23 @@
     -->
     <meta name="google_aistudio_project_id" content="aistudio-gaji-borongan-project">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Configure Tailwind CSS to use the 'Inter' font family.
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- jsPDF and html2canvas for PDF export functionality -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

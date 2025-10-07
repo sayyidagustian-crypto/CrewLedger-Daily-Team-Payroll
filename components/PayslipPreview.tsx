@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import type { Payslip } from '../types';
 import { DownloadIcon, ShareIcon, UserCircleIcon } from './icons';
@@ -23,7 +22,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     const { jsPDF } = window.jspdf;
     const html2canvas = window.html2canvas;
 
-    html2canvas(payslipRef.current, { scale: 2 }).then((canvas) => {
+    html2canvas(payslipRef.current, { scale: 2, backgroundColor: '#ffffff' }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -43,7 +42,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     setIsSharing(true);
 
     try {
-        const canvas = await window.html2canvas(payslipRef.current, { scale: 2 });
+        const canvas = await window.html2canvas(payslipRef.current, { scale: 2, backgroundColor: '#ffffff' });
         canvas.toBlob(async (blob) => {
             if (blob) {
                 const file = new File([blob], `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.png`, { type: 'image/png' });
@@ -76,7 +75,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
 
   if (!payslip) {
     return (
-      <div className="flex items-center justify-center h-full bg-slate-100 rounded-lg">
+      <div className="flex items-center justify-center h-full bg-slate-100 rounded-xl border border-slate-200">
         <div className="text-center p-8">
             <h3 className="text-xl font-semibold text-slate-600">{t('payslipPreview')}</h3>
             <p className="text-slate-500 mt-2">{t('generatePayslipHint')}</p>
@@ -86,12 +85,12 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div ref={payslipRef} className="bg-white p-8 md:p-10 flex-grow rounded-t-lg shadow-lg">
-        <header className="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-6">
+    <div className="flex flex-col h-full bg-slate-50 rounded-xl shadow-md border border-slate-200">
+      <div ref={payslipRef} className="bg-white p-6 md:p-8 flex-grow rounded-t-xl">
+        <header className="flex justify-between items-start border-b-2 border-indigo-500 pb-4 mb-6">
           <div>
-              <h1 className="text-3xl font-bold text-slate-800">{t('payslip')}</h1>
-              <p className="text-slate-600">{t('period')}: {payslip.period}</p>
+              <h1 className="text-4xl font-bold text-indigo-600 tracking-wider font-serif">{t('payslip')}</h1>
+              <p className="text-slate-500 mt-1">{t('period')}: {payslip.period}</p>
           </div>
           {payslip.employeeProfilePicture ? (
               <img src={payslip.employeeProfilePicture} alt={payslip.employeeName} className="w-20 h-20 rounded-full object-cover border-2 border-slate-200" />
@@ -101,36 +100,36 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         </header>
 
         <section className="mb-6">
-          <h2 className="text-lg font-semibold text-slate-700 mb-2">{t('employeeDetails')}</h2>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-            <div className="text-slate-500">{t('employeeName')}</div>
-            <div className="text-slate-800 font-medium text-right">{payslip.employeeName}</div>
-            <div className="text-slate-500">{t('position')}</div>
-            <div className="text-slate-800 font-medium text-right">{payslip.employeePosition || '-'}</div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">{t('employeeDetails')}</h2>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-base">
+            <div className="text-slate-600">{t('employeeName')}</div>
+            <div className="text-slate-800 font-semibold text-right">{payslip.employeeName}</div>
+            <div className="text-slate-600">{t('position')}</div>
+            <div className="text-slate-800 font-semibold text-right">{payslip.employeePosition || '-'}</div>
           </div>
         </section>
 
         <section className="mb-6">
-            <h2 className="text-lg font-semibold text-slate-700 mb-2">{t('dailyPieceRateEarnings')}</h2>
-            <div className="overflow-x-auto border rounded-lg">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">{t('dailyPieceRateEarnings')}</h2>
+            <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-100">
                     <tr>
-                        <th scope="col" className="px-4 py-2">{t('date')}</th>
-                        <th scope="col" className="px-4 py-2">{t('tasks')}</th>
-                        <th scope="col" className="px-4 py-2 text-right">{t('groupTotal')}</th>
-                        <th scope="col" className="px-4 py-2 text-center">{t('presentCrew')}</th>
-                        <th scope="col" className="px-4 py-2 text-right">{t('yourEarning')}</th>
+                        <th scope="col" className="px-4 py-3 font-semibold">{t('date')}</th>
+                        <th scope="col" className="px-4 py-3 font-semibold">{t('tasks')}</th>
+                        <th scope="col" className="px-4 py-3 text-right font-semibold">{t('groupTotal')}</th>
+                        <th scope="col" className="px-4 py-3 text-center font-semibold">{t('presentCrew')}</th>
+                        <th scope="col" className="px-4 py-3 text-right font-semibold">{t('yourEarning')}</th>
                     </tr>
                     </thead>
                     <tbody>
                     {payslip.logs.map((log, index) => (
-                        <tr key={index} className="bg-white border-b last:border-b-0">
-                            <td className="px-4 py-2">{formatDate(log.date)}</td>
-                            <td className="px-4 py-2 font-medium text-slate-800">{log.taskName}</td>
-                            <td className="px-4 py-2 text-right font-mono">{formatCurrency(log.totalDailyGross)}</td>
-                            <td className="px-4 py-2 text-center font-mono">{log.workersPresent}</td>
-                            <td className="px-4 py-2 text-right font-mono font-semibold text-slate-800">{formatCurrency(log.yourEarning)}</td>
+                        <tr key={index} className="bg-white border-b last:border-b-0 hover:bg-slate-50">
+                            <td className="px-4 py-3 whitespace-nowrap">{formatDate(log.date)}</td>
+                            <td className="px-4 py-3 font-medium text-slate-800">{log.taskName}</td>
+                            <td className="px-4 py-3 text-right font-mono">{formatCurrency(log.totalDailyGross)}</td>
+                            <td className="px-4 py-3 text-center font-mono">{log.workersPresent}</td>
+                            <td className="px-4 py-3 text-right font-mono font-semibold text-indigo-700">{formatCurrency(log.yourEarning)}</td>
                         </tr>
                     ))}
                     </tbody>
@@ -139,10 +138,10 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         </section>
 
 
-        <section className="mb-8 space-y-2">
-            <div className="flex justify-between items-center border-t pt-4 mt-4">
-              <span className="text-slate-600 font-semibold">{t('grossSalary')}</span>
-              <span className="text-slate-800 font-semibold font-mono">{formatCurrency(payslip.grossSalary)}</span>
+        <section className="mt-8 space-y-2">
+            <div className="flex justify-between items-center border-t pt-4">
+              <span className="text-slate-600 text-lg font-semibold">{t('grossSalary')}</span>
+              <span className="text-slate-800 text-lg font-semibold font-mono">{formatCurrency(payslip.grossSalary)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">{t('allowancesBonus')}</span>
@@ -154,23 +153,23 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             </div>
         </section>
 
-        <footer className="border-t-2 border-slate-800 pt-4 text-right">
-            <p className="text-slate-600 font-semibold text-lg">{t('netSalary')}</p>
-            <p className="text-2xl font-bold text-slate-900 font-mono">{formatCurrency(payslip.netSalary)}</p>
+        <footer className="bg-indigo-600 text-white p-6 rounded-lg mt-6 text-right">
+            <p className="text-indigo-200 font-semibold uppercase tracking-wider text-sm">{t('netSalary')}</p>
+            <p className="text-4xl font-bold font-mono">{formatCurrency(payslip.netSalary)}</p>
         </footer>
       </div>
-      <div className="bg-white p-4 rounded-b-lg border-t border-slate-200 grid grid-cols-2 gap-3">
+      <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-2 gap-3">
         <button
           onClick={handleShare}
           disabled={isSharing}
-          className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors flex items-center justify-center disabled:bg-slate-400"
+          className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all flex items-center justify-center disabled:bg-slate-400 transform hover:scale-105"
         >
           <ShareIcon />
           {isSharing ? t('sharing') : t('share')}
         </button>
         <button
           onClick={handleExportPDF}
-          className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors flex items-center justify-center"
+          className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105"
         >
           <DownloadIcon />
           {t('exportToPDF')}

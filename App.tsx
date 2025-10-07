@@ -1,7 +1,5 @@
-
-
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, AppConfig } from './types';
+import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import { PayslipPreview } from './components/PayslipPreview';
 import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon, LogoutIcon, AtSymbolIcon, LockClosedIcon, IdentificationIcon, PhoneIcon, InformationCircleIcon } from './components/icons';
@@ -10,7 +8,7 @@ import { remoteConfigService } from './services/remoteConfig';
 import { payslipService } from './services/payslipService';
 
 type ActiveTab = 'dailyLog' | 'generator' | 'employees' | 'rates' | 'history' | 'settings';
-type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy';
+type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy' | 'devAccess';
 
 
 // =================================================================
@@ -116,7 +114,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                  setDailyLogs(prev => prev.filter(l => l.id !== id));
                  break;
             case 'payslip':
-                setPayslips(prev => prev.filter(p => p.id !== id));
+                setPayslips(prev => prev.filter(p => p.id === id));
                 if (selectedPayslip?.id === id) setSelectedPayslip(null);
                 break;
         }
@@ -175,6 +173,74 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             </div>
         </Modal>
     );
+    
+    const DevAccessModalContent: React.FC = () => {
+        const [devSettings, setDevSettings] = useLocalStorage<DevSettings>('dev_settings', { admobBannerId: '', adsenseClientId: '' });
+        const [oneTimeCode, setOneTimeCode] = useState('');
+        const [isCodeVerified, setIsCodeVerified] = useState(false);
+        const [verificationMessage, setVerificationMessage] = useState('');
+        const [formData, setFormData] = useState(devSettings);
+
+        useEffect(() => {
+            setFormData(devSettings);
+        }, [devSettings]);
+
+        const handleVerifyCode = () => {
+            const validCodes = remoteConfigService.getTuningValue('admin_access_codes');
+            if (validCodes.includes(oneTimeCode)) {
+                setIsCodeVerified(true);
+                setVerificationMessage(t('codeVerified'));
+            } else {
+                setIsCodeVerified(false);
+                setVerificationMessage(t('invalidCode'));
+            }
+        };
+
+        const handleSave = () => {
+            setDevSettings(formData);
+            alert(t('devSettingsSaved'));
+            closeModal();
+        };
+
+        return (
+            <div className="space-y-4">
+                {!isCodeVerified ? (
+                    <div className="space-y-2">
+                         <label htmlFor="oneTimeCode" className="block text-sm font-medium text-slate-700">{t('oneTimeCode')}</label>
+                        <div className="flex space-x-2">
+                             <input type="text" id="oneTimeCode" value={oneTimeCode} onChange={e => setOneTimeCode(e.target.value)} placeholder={t('enterCode')} className="flex-grow mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" />
+                            <button onClick={handleVerifyCode} className="px-4 py-2 mt-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">{t('verify')}</button>
+                        </div>
+                        {verificationMessage && <p className={`text-sm ${isCodeVerified ? 'text-green-600' : 'text-red-600'}`}>{verificationMessage}</p>}
+                    </div>
+                ) : (
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-md">
+                        <p className="font-bold">{t('codeVerified')}</p>
+                    </div>
+                )}
+
+                {isCodeVerified && (
+                     <div className="space-y-4 border-t pt-4">
+                        <h4 className="text-lg font-semibold text-slate-800">{t('devSettings')}</h4>
+                         <p className="text-sm text-slate-500">{t('devSettingsInfo')}</p>
+                        <div>
+                             <label htmlFor="admobBannerId" className="block text-sm font-medium text-slate-700">{t('admobBannerId')}</label>
+                             <input type="text" id="admobBannerId" value={formData.admobBannerId} onChange={e => setFormData({...formData, admobBannerId: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
+                        </div>
+                        <div>
+                             <label htmlFor="adsenseClientId" className="block text-sm font-medium text-slate-700">{t('adsenseClientId')}</label>
+                             <input type="text" id="adsenseClientId" value={formData.adsenseClientId} onChange={e => setFormData({...formData, adsenseClientId: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
+                        </div>
+                        <div className="flex justify-end space-x-2 pt-2">
+                            <button type="button" onClick={closeModal} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('cancel')}</button>
+                            <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"><SaveIcon /> {t('saveDevSettings')}</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
 
     // --- SUB-COMPONENTS FOR TABS ---
     const EmployeeManager = () => {
@@ -245,14 +311,14 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
         return (
             <div>
-                 <div className="flex justify-between items-center mb-4">
+                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('employees')}</h2>
-                    <button onClick={() => openModal('addEmployee')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center"><UserPlusIcon />{t('addEmployee')}</button>
+                    <button onClick={() => openModal('addEmployee')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center transition-colors transform hover:scale-105"><UserPlusIcon />{t('addEmployee')}</button>
                 </div>
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
                     <ul className="divide-y divide-slate-200">
                         {employees.length > 0 ? employees.map(emp => (
-                            <li key={emp.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                            <li key={emp.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                 <div className="flex items-center">
                                     {emp.profilePicture ? <img src={emp.profilePicture} alt={emp.name} className="h-12 w-12 rounded-full object-cover"/> : <UserCircleIcon className="h-12 w-12 text-slate-300"/>}
                                     <div className="ml-4">
@@ -262,11 +328,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                 </div>
                                 <div className="flex items-center space-x-2">
                                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${emp.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{t(emp.status.toLowerCase() as any)}</span>
-                                    <button onClick={() => openModal('editEmployee', emp)} className="p-2 text-slate-500 hover:text-indigo-600">{t('edit')}</button>
-                                    <button onClick={() => openModal('deleteConfirm', { itemType: 'employee', id: emp.id })} className="p-2 text-slate-500 hover:text-red-600"><TrashIcon /></button>
+                                    <button onClick={() => openModal('editEmployee', emp)} className="p-2 text-slate-500 hover:text-indigo-600 rounded-md transition-colors">{t('edit')}</button>
+                                    <button onClick={() => openModal('deleteConfirm', { itemType: 'employee', id: emp.id })} className="p-2 text-slate-500 hover:text-red-600 rounded-md transition-colors"><TrashIcon /></button>
                                 </div>
                             </li>
-                        )) : <p className="p-4 text-center text-slate-500">{t('noEmployeeData')}</p>}
+                        )) : <p className="p-6 text-center text-slate-500">{t('noEmployeeData')}</p>}
                     </ul>
                 </div>
                 { (modal.type === 'addEmployee' || modal.type === 'editEmployee') && 
@@ -322,24 +388,24 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         
         return (
             <div>
-                 <div className="flex justify-between items-center mb-4">
+                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('rates')}</h2>
-                    <button onClick={() => openModal('addRate')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center"><TagIcon /> {t('addRate')}</button>
+                    <button onClick={() => openModal('addRate')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center transition-colors transform hover:scale-105"><TagIcon /> {t('addRate')}</button>
                 </div>
-                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                 <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
                     <ul className="divide-y divide-slate-200">
                         {pieceRates.length > 0 ? pieceRates.map(rate => (
-                            <li key={rate.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                            <li key={rate.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                 <div>
                                     <p className="text-lg font-medium text-slate-900">{rate.taskName}</p>
                                     <p className="text-sm text-slate-500">{formatCurrency(rate.rate)} {t('perUnit')}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <button onClick={() => openModal('editRate', rate)} className="p-2 text-slate-500 hover:text-indigo-600">{t('edit')}</button>
-                                    <button onClick={() => openModal('deleteConfirm', { itemType: 'rate', id: rate.id })} className="p-2 text-slate-500 hover:text-red-600"><TrashIcon /></button>
+                                    <button onClick={() => openModal('editRate', rate)} className="p-2 text-slate-500 hover:text-indigo-600 rounded-md transition-colors">{t('edit')}</button>
+                                    <button onClick={() => openModal('deleteConfirm', { itemType: 'rate', id: rate.id })} className="p-2 text-slate-500 hover:text-red-600 rounded-md transition-colors"><TrashIcon /></button>
                                 </div>
                             </li>
-                        )) : <p className="p-4 text-center text-slate-500">{t('noRateData')}</p>}
+                        )) : <p className="p-6 text-center text-slate-500">{t('noRateData')}</p>}
                     </ul>
                 </div>
                 { (modal.type === 'addRate' || modal.type === 'editRate') && 
@@ -357,7 +423,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         const [currentTasks, setCurrentTasks] = useState<DailyTask[]>([]);
         const [newTask, setNewTask] = useState<{pieceRateId: string, quantity: string}>({ pieceRateId: '', quantity: '' });
 
-        const todaysLogs = useMemo(() => dailyLogs.filter(log => log.date === logDate), [dailyLogs, logDate]);
+        const todaysLogs = useMemo(() => dailyLogs.filter(log => log.date === logDate).sort((a, b) => parseInt(b.id) - parseInt(a.id)), [dailyLogs, logDate]);
         const totalGross = useMemo(() => currentTasks.reduce((sum, task) => sum + task.subTotal, 0), [currentTasks]);
         const individualEarnings = useMemo(() => presentEmployeeIds.length > 0 ? totalGross / presentEmployeeIds.length : 0, [totalGross, presentEmployeeIds]);
 
@@ -405,19 +471,19 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Entry Form */}
-                    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 space-y-4">
                          <h2 className="text-xl font-bold text-slate-800">{t('dailyGroupEntry')}</h2>
                          <div>
-                            <label htmlFor="logDate" className="block text-sm font-medium text-slate-700">{t('date')}</label>
+                            <label htmlFor="logDate" className="block text-sm font-medium text-slate-700 mb-1">{t('date')}</label>
                             <input type="date" id="logDate" value={logDate} onChange={e => setLogDate(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
                         </div>
                         <div>
-                             <label className="block text-sm font-medium text-slate-700">{t('selectPresentEmployees')}</label>
+                             <label className="block text-sm font-medium text-slate-700 mb-1">{t('selectPresentEmployees')}</label>
                             <div className="mt-2 border border-slate-300 rounded-md max-h-48 overflow-y-auto">
                                 {activeEmployees.map(emp => (
-                                    <div key={emp.id} className="flex items-center p-2 border-b last:border-0">
-                                        <input id={`emp-${emp.id}`} type="checkbox" checked={presentEmployeeIds.includes(emp.id)} onChange={() => handleEmployeeToggle(emp.id)} className="h-4 w-4 text-indigo-600 border-slate-300 rounded" />
-                                        <label htmlFor={`emp-${emp.id}`} className="ml-3 text-sm text-slate-700">{emp.name}</label>
+                                    <div key={emp.id} className="flex items-center p-2 border-b last:border-0 hover:bg-slate-50">
+                                        <input id={`emp-${emp.id}`} type="checkbox" checked={presentEmployeeIds.includes(emp.id)} onChange={() => handleEmployeeToggle(emp.id)} className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500" />
+                                        <label htmlFor={`emp-${emp.id}`} className="ml-3 text-sm text-slate-700 cursor-pointer flex-grow">{emp.name}</label>
                                     </div>
                                 ))}
                             </div>
@@ -432,50 +498,50 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                 </select>
                                 <input type="number" value={newTask.quantity} onChange={e => setNewTask({...newTask, quantity: e.target.value})} placeholder={t('totalQuantity')} className="block w-full text-sm border-slate-300 rounded-md text-slate-900" />
                             </div>
-                            <button onClick={handleAddTask} className="w-full bg-slate-200 text-slate-800 py-2 rounded-md hover:bg-slate-300">{t('addTaskToList')}</button>
+                            <button onClick={handleAddTask} className="w-full bg-slate-200 text-slate-800 py-2 rounded-md hover:bg-slate-300 font-semibold transition-colors">{t('addTaskToList')}</button>
                         </div>
 
                          {/* Current Task List */}
                         {currentTasks.length > 0 && (
                              <div className="border-t pt-4">
                                 <h3 className="text-lg font-semibold text-slate-700">{t('todaysTaskList')}</h3>
-                                <ul className="divide-y">
+                                <ul className="divide-y divide-slate-200">
                                     {currentTasks.map((task, idx) => (
                                         <li key={idx} className="py-2 flex justify-between items-center">
                                             <div>
-                                                <p>{task.taskName}</p>
+                                                <p className="font-medium text-slate-800">{task.taskName}</p>
                                                 <p className="text-sm text-slate-500">{task.quantity} x {formatCurrency(task.rate)} = {formatCurrency(task.subTotal)}</p>
                                             </div>
-                                            <button onClick={() => setCurrentTasks(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 text-sm">{t('remove')}</button>
+                                            <button onClick={() => setCurrentTasks(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 text-sm font-medium">{t('remove')}</button>
                                         </li>
                                     ))}
                                 </ul>
                                 <div className="mt-4 pt-4 border-t text-right">
-                                     <p className="font-semibold text-slate-600">{t('todaysTotal')}: <span className="text-xl font-bold text-slate-800">{formatCurrency(totalGross)}</span></p>
-                                     <p className="text-slate-500">{t('perPerson')}: <span className="font-semibold">{formatCurrency(individualEarnings)}</span></p>
+                                     <p className="font-semibold text-slate-600">{t('todaysTotal')}: <span className="text-xl font-bold text-slate-800 font-mono">{formatCurrency(totalGross)}</span></p>
+                                     <p className="text-slate-500">{t('perPerson')}: <span className="font-semibold font-mono">{formatCurrency(individualEarnings)}</span></p>
                                 </div>
                             </div>
                         )}
-                        <button onClick={handleSaveLog} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center"><SaveIcon/>{t('saveDailyLog')}</button>
+                        <button onClick={handleSaveLog} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center transition-colors transform hover:scale-105"><SaveIcon/>{t('saveDailyLog')}</button>
                     </div>
 
                      {/* Todays Logs */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                         <h2 className="text-xl font-bold text-slate-800">{t('logForDate')} {formatDate(logDate)}</h2>
                         <div className="mt-4 space-y-4 max-h-[70vh] overflow-y-auto">
                             {todaysLogs.length > 0 ? todaysLogs.map(log => (
-                                <div key={log.id} className="border p-4 rounded-md">
+                                <div key={log.id} className="border border-slate-200 p-4 rounded-lg">
                                     <div className="flex justify-between items-start">
                                          <div>
-                                            <p className="font-bold text-slate-800 text-lg">{formatCurrency(log.totalGrossEarnings)}</p>
+                                            <p className="font-bold text-slate-800 text-lg font-mono">{formatCurrency(log.totalGrossEarnings)}</p>
                                             <p className="text-sm text-slate-500">{log.presentEmployeeIds.length} {t('workersPresent')} ({formatCurrency(log.individualEarnings)} / {t('perPerson')})</p>
                                         </div>
                                         <div>
-                                            <button onClick={() => openModal('deleteConfirm', { itemType: 'log', id: log.id })} className="text-red-500"><TrashIcon /></button>
+                                            <button onClick={() => openModal('deleteConfirm', { itemType: 'log', id: log.id })} className="text-red-500 hover:text-red-700 p-1"><TrashIcon /></button>
                                         </div>
                                     </div>
-                                    <ul className="mt-2 text-sm text-slate-600">
-                                        {log.tasks.map((t, i) => <li key={i}>- {t.taskName} ({t.quantity})</li>)}
+                                    <ul className="mt-2 text-sm text-slate-600 list-disc list-inside">
+                                        {log.tasks.map((t, i) => <li key={i}>{t.taskName} ({t.quantity})</li>)}
                                     </ul>
                                 </div>
                             )) : <p className="text-slate-500 text-center py-8">{t('noLogEntries')}</p>}
@@ -559,7 +625,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             };
 
             return (
-                <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-amber-400">
+                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 border-t-4 border-indigo-500">
                     <h2 className="text-xl font-bold text-slate-800">{t('bulkGenerate')}</h2>
                     <p className="text-slate-600 mt-2">{t('bulkGenerateDescription')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -569,7 +635,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         </div>
                     </div>
                      <div className="mt-4">
-                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-amber-500 text-white font-bold py-3 rounded-lg hover:bg-amber-600 flex items-center justify-center">
+                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg hover:bg-indigo-600 flex items-center justify-center transition-colors transform hover:scale-105">
                             <UsersIcon />
                             <span className="ml-2">{t('bulkGeneratePayslips')}</span>
                         </button>
@@ -592,7 +658,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
         return (
             <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                     <h2 className="text-xl font-bold text-slate-800">{t('generatePayslip')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
@@ -616,7 +682,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         </div>
                     </div>
                     <div className="mt-4">
-                        <button onClick={handleSingleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center">
+                        <button onClick={handleSingleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center transition-colors transform hover:scale-105">
                             <SparklesIcon className="h-5 w-5 mr-2" />
                             {t('generatePayslip')}
                         </button>
@@ -626,7 +692,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 {remoteConfigService.isFeatureEnabled('enableBulkGenerate') && <BulkGenerator />}
 
                 {periodLogs.length > 0 && (
-                     <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+                     <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 mt-6">
                         <h3 className="text-lg font-semibold text-slate-700">{t('dailyPieceRateEarnings')}</h3>
                         <div className="overflow-x-auto border rounded-lg mt-2 max-h-60">
                              <table className="w-full text-sm text-left text-slate-500">
@@ -670,24 +736,24 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         return (
              <div>
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('payslipHistory')}</h2>
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
                     <ul className="divide-y divide-slate-200">
                         {sortedPayslips.length > 0 ? sortedPayslips.map(p => (
-                            <li key={p.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                            <li key={p.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                 <div className="flex items-center">
                                     {p.employeeProfilePicture ? <img src={p.employeeProfilePicture} alt={p.employeeName} className="h-12 w-12 rounded-full object-cover"/> : <UserCircleIcon className="h-12 w-12 text-slate-300"/>}
                                     <div className="ml-4">
                                         <p className="text-lg font-medium text-slate-900">{p.employeeName}</p>
                                         <p className="text-sm text-slate-500">{t('period')}: {p.period}</p>
-                                        <p className="text-sm font-mono text-slate-700">{formatCurrency(p.netSalary)}</p>
+                                        <p className="text-sm font-mono font-semibold text-slate-700">{formatCurrency(p.netSalary)}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                     <button onClick={() => viewPayslip(p)} className="p-2 text-slate-500 hover:text-indigo-600"><EyeIcon /></button>
-                                     <button onClick={() => openModal('deleteConfirm', { itemType: 'payslip', id: p.id })} className="p-2 text-slate-500 hover:text-red-600"><TrashIcon /></button>
+                                     <button onClick={() => viewPayslip(p)} className="p-2 text-slate-500 hover:text-indigo-600 rounded-md transition-colors"><EyeIcon /></button>
+                                     <button onClick={() => openModal('deleteConfirm', { itemType: 'payslip', id: p.id })} className="p-2 text-slate-500 hover:text-red-600 rounded-md transition-colors"><TrashIcon /></button>
                                 </div>
                             </li>
-                        )) : <p className="p-4 text-center text-slate-500">{t('noPayslipHistory')}</p>}
+                        )) : <p className="p-6 text-center text-slate-500">{t('noPayslipHistory')}</p>}
                     </ul>
                 </div>
             </div>
@@ -696,58 +762,17 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
     const Settings = () => {
         const fileRestoreRef = useRef<HTMLInputElement>(null);
-        const [isOwnerMode, setIsOwnerMode] = useLocalStorage<boolean>(`isOwnerMode_${currentUser.id}`, false);
-        const [appConfig, setAppConfig] = useLocalStorage<AppConfig>(`appConfig_${currentUser.id}`, {
-            appName: '',
-            appDescription: '',
-            appIcon: '',
-            admobBannerId: ''
-        });
-        const [usedCodes, setUsedCodes] = useLocalStorage<string[]>(`usedAdminCodes_${currentUser.id}`, []);
-        const [accessCode, setAccessCode] = useState('');
-        
-        const handleUnlockOwnerMode = () => {
-            const code = accessCode.trim();
-            const validAdminCodes = remoteConfigService.getTuningValue('admin_access_codes') || [];
-    
-            if (!validAdminCodes.includes(code)) {
-                alert(t('ownerCodeInvalidError'));
-                setAccessCode('');
-                return;
+        const [secretInputVisible, setSecretInputVisible] = useState(false);
+        const [secretCode, setSecretCode] = useState('');
+
+        useEffect(() => {
+            if (secretCode.toLowerCase() === 'sat18 official') {
+                openModal('devAccess');
+                setSecretCode('');
+                setSecretInputVisible(false);
             }
-    
-            if (usedCodes.includes(code)) {
-                alert(t('ownerCodeUsedError'));
-                setAccessCode('');
-                return;
-            }
-    
-            setIsOwnerMode(true);
-            setUsedCodes(prev => [...prev, code]);
-            setAccessCode('');
-        };
-    
-        const handleConfigChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            setAppConfig(prev => ({ ...prev, [e.target.name]: e.target.value }));
-        };
-    
-        const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setAppConfig(prev => ({...prev, appIcon: reader.result as string}));
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        
-        const resetConfig = () => {
-            if (confirm(t('confirmResetSettings'))) {
-                setAppConfig({ appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
-                alert(t('settingsReset'));
-            }
-        };
+        }, [secretCode]);
+
 
         const handleBackup = () => {
             try {
@@ -805,126 +830,94 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
              }
             reader.readAsText(file);
         };
+        
+        const SettingsCard: React.FC<{title: string; description: string; children: React.ReactNode; className?: string}> = ({ title, description, children, className }) => (
+            <div className={`bg-white p-6 rounded-xl shadow-md border border-slate-200 ${className || ''}`}>
+                <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+                <p className="text-sm text-slate-500 mt-1">{description}</p>
+                <div className="mt-4">{children}</div>
+            </div>
+        );
+
 
         return (
-            <div className="space-y-8">
-                <div>
+            <div className="space-y-6">
+                 <div>
                     <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('profileAndSettings')}</h2>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-800">{t('profile')}</h3>
+                <SettingsCard title={t('profile')} description="">
                     <div className="mt-4 space-y-2 text-slate-600">
-                        <div className="flex"><strong className="w-28">{t('fullName')}:</strong> <span>{currentUser.fullName}</span></div>
-                        <div className="flex"><strong className="w-28">{t('username')}:</strong> <span>{currentUser.username}</span></div>
-                        <div className="flex"><strong className="w-28">{t('email')}:</strong> <span>{currentUser.email}</span></div>
-                        <div className="flex"><strong className="w-28">{t('contactNumber')}:</strong> <span>{currentUser.contactNumber || '-'}</span></div>
+                        <div className="flex"><strong className="w-32 font-medium">{t('fullName')}:</strong> <span>{currentUser.fullName}</span></div>
+                        <div className="flex"><strong className="w-32 font-medium">{t('username')}:</strong> <span>{currentUser.username}</span></div>
+                        <div className="flex"><strong className="w-32 font-medium">{t('email')}:</strong> <span>{currentUser.email}</span></div>
+                        <div className="flex"><strong className="w-32 font-medium">{t('contactNumber')}:</strong> <span>{currentUser.contactNumber || '-'}</span></div>
                     </div>
-                </div>
+                </SettingsCard>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-800">{t('languageAndCurrency')}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{t('languageAndCurrencyDesc')}</p>
-                    <div className="mt-4">
-                        <label htmlFor="language-select" className="block text-sm font-medium text-slate-700">{t('language')}</label>
-                        <select
-                            id="language-select"
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value as 'en' | 'id')}
-                            className="mt-1 block w-full md:w-1/2 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900"
-                        >
-                            <option value="en">{t('english')}</option>
-                            <option value="id">{t('indonesian')}</option>
-                        </select>
-                    </div>
-                </div>
+                <SettingsCard title={t('languageAndCurrency')} description={t('languageAndCurrencyDesc')}>
+                     <select
+                        id="language-select"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value as 'en' | 'id')}
+                        className="mt-1 block w-full md:w-1/2 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900"
+                    >
+                        <option value="en">{t('english')}</option>
+                        <option value="id">{t('indonesian')}</option>
+                    </select>
+                </SettingsCard>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-800">{t('localBackup')}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{t('localBackupDesc')}</p>
-                    <button onClick={handleBackup} className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center"><DownloadIcon />{t('backupToFile')}</button>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-800">{t('localRestore')}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{t('localRestoreDesc')}</p>
-                    <div className="mt-2 p-3 bg-amber-100 border-l-4 border-amber-500 text-amber-700">
+                 <SettingsCard title={t('localBackup')} description={t('localBackupDesc')}>
+                     <button onClick={handleBackup} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center transition-colors transform hover:scale-105"><DownloadIcon />{t('backupToFile')}</button>
+                </SettingsCard>
+                
+                 <SettingsCard title={t('localRestore')} description={t('localRestoreDesc')}>
+                    <div className="mt-2 p-3 bg-amber-100 border-l-4 border-amber-500 text-amber-700 rounded-r-md">
                         <p className="font-bold">{t('warning')}</p>
                         <p>{t('warningRestore')}</p>
                     </div>
                     <div className="mt-4">
                         <input type="file" id="restoreFile" accept=".json" onChange={handleRestore} className="hidden" ref={fileRestoreRef} />
-                        <label htmlFor="restoreFile" className="cursor-pointer bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center w-max"><UploadIcon />{t('restoreFromFile')}</label>
+                        <label htmlFor="restoreFile" className="cursor-pointer bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center w-max transition-colors transform hover:scale-105"><UploadIcon />{t('restoreFromFile')}</label>
                     </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                     <h3 className="text-lg font-semibold text-slate-800">{t('aboutThisApp')}</h3>
-                     <p className="text-sm text-slate-600 mt-2">{t('aboutText')}</p>
-                     <button onClick={() => openModal('policy')} className="mt-6 text-sm text-indigo-600 hover:underline">{t('viewRules')}</button>
-                </div>
+                </SettingsCard>
                 
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-800">{t('ownerMode')}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{t('ownerModeDesc')}</p>
-                    <div className="mt-4">
-                        {isOwnerMode ? (
-                            <button onClick={() => setIsOwnerMode(false)} className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700">{t('exitOwnerMode')}</button>
-                        ) : (
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="text"
-                                    value={accessCode}
-                                    onChange={(e) => setAccessCode(e.target.value)}
-                                    placeholder={t('ownerCodePlaceholder')}
-                                    className="flex-grow px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900"
-                                    aria-label={t('ownerCodePlaceholder')}
-                                />
-                                <button onClick={handleUnlockOwnerMode} className="bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700">{t('unlock')}</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {isOwnerMode && (
-                    <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500 animate-fade-in">
-                        <h3 className="text-xl font-bold text-slate-800 mb-4">{t('ownerSettings')}</h3>
-                        <div className="space-y-6">
-                            <div>
-                                <h4 className="text-lg font-semibold text-slate-700">{t('appCustomization')}</h4>
-                                <div className="mt-4 space-y-4">
-                                    <div>
-                                        <label htmlFor="appName" className="block text-sm font-medium text-slate-700">{t('customizeAppName')}</label>
-                                        <input type="text" name="appName" id="appName" value={appConfig.appName} onChange={handleConfigChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder={t('appName')} />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="appDescription" className="block text-sm font-medium text-slate-700">{t('customizeAppDesc')}</label>
-                                        <textarea name="appDescription" id="appDescription" value={appConfig.appDescription} onChange={handleConfigChange} rows={2} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder={t('appDescription')} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700">{t('customizeAppIcon')}</label>
-                                        <div className="mt-1 flex items-center space-x-4">
-                                            {appConfig.appIcon ? <img src={appConfig.appIcon} alt="preview" className="h-16 w-16 object-cover rounded-md bg-slate-100" /> : <div className="h-16 w-16 bg-slate-100 rounded-md flex items-center justify-center text-slate-400">Preview</div> }
-                                            <input type="file" accept="image/*" onChange={handleIconUpload} className="hidden" id="icon-upload" />
-                                            <label htmlFor="icon-upload" className="cursor-pointer bg-white py-2 px-3 border border-slate-300 rounded-md shadow-sm text-sm leading-4 font-medium text-slate-700 hover:bg-slate-50">{t('upload')}</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-semibold text-slate-700">{t('admobSettings')}</h4>
-                                <p className="text-sm text-slate-500 mt-1">{t('admobSettingsDesc')}</p>
-                                <div className="mt-4">
-                                    <label htmlFor="admobBannerId" className="block text-sm font-medium text-slate-700">{t('admobBannerId')}</label>
-                                    <input type="text" name="admobBannerId" id="admobBannerId" value={appConfig.admobBannerId} onChange={handleConfigChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" placeholder="ca-app-pub-..." />
-                                </div>
-                            </div>
-                            <div className="flex justify-end space-x-3 border-t pt-4">
-                                <button onClick={resetConfig} type="button" className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('resetSettings')}</button>
-                                <button onClick={() => alert(t('settingsSaved'))} type="button" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"><SaveIcon /> {t('saveSettings')}</button>
-                            </div>
+                <SettingsCard title={t('aboutThisApp')} description={t('aboutIntro')} className="relative">
+                    <div className="space-y-4 text-slate-600 text-sm border-t pt-4">
+                        <p dangerouslySetInnerHTML={{ __html: t('aboutThanks') }} />
+                        <div>
+                            <p>{t('aboutBugReportPrompt')}</p>
+                            <a href="https://aistudio.google.com/app/creations/aistudio-gaji-borongan-project" target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline font-semibold inline-block mt-1">
+                                {t('aboutBugReportLink')}
+                            </a>
+                        </div>
+                        <div>
+                            <p className="font-semibold">{t('aboutOfficialSite')}:</p>
+                            <a href="https://crewledger.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline font-semibold">
+                                https://crewledger.netlify.app/
+                            </a>
                         </div>
                     </div>
-                )}
+                    <button onClick={() => openModal('policy')} className="mt-4 text-sm text-indigo-600 hover:underline font-semibold">{t('viewRules')}</button>
+                
+                    <div 
+                        className="absolute bottom-2 right-2 text-slate-300 hover:text-indigo-500 cursor-pointer p-1"
+                        onClick={() => setSecretInputVisible(!secretInputVisible)}
+                        title="dev"
+                    >
+                       @
+                    </div>
+                    {secretInputVisible && (
+                        <input 
+                            type="text"
+                            value={secretCode}
+                            onChange={(e) => setSecretCode(e.target.value)}
+                            className="absolute bottom-9 right-2 p-1 border border-slate-300 rounded-md shadow-sm w-48 text-sm"
+                            placeholder=""
+                            autoFocus
+                            onBlur={() => setSecretInputVisible(false)}
+                        />
+                    )}
+                </SettingsCard>
             </div>
         );
     };
@@ -951,35 +944,28 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
     ];
     
     const SidebarContent = () => {
-        const [appConfig] = useLocalStorage<AppConfig>(`appConfig_${currentUser.id}`, { appName: '', appDescription: '', appIcon: '', admobBannerId: '' });
-
-        const AppIcon = () => {
-            if (appConfig.appIcon) {
-                return <img src={appConfig.appIcon} alt="App Icon" className="h-12 w-12 rounded-lg mr-3 object-cover flex-shrink-0" />;
-            }
-            return (
-                <div className="h-12 w-12 mr-3 rounded-lg bg-white p-1 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                        <rect width="100" height="100" rx="20" fill="#4f46e5"/>
-                        <rect x="25" y="25" width="50" height="60" rx="5" fill="white"/>
-                        <rect x="35" y="38" width="30" height="5" rx="2" fill="#a5b4fc"/>
-                        <rect x="35" y="50" width="30" height="5" rx="2" fill="#c7d2fe"/>
-                        <rect x="35" y="62" width="15" height="5" rx="2" fill="#a5b4fc"/>
-                    </svg>
-                </div>
-            );
-        };
+        const AppIcon = () => (
+             <div className="h-10 w-10 mr-3 rounded-lg bg-white p-1 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <rect width="100" height="100" rx="20" fill="#4f46e5"/>
+                    <rect x="25" y="25" width="50" height="60" rx="5" fill="white"/>
+                    <rect x="35" y="38" width="30" height="5" rx="2" fill="#a5b4fc"/>
+                    <rect x="35" y="50" width="30" height="5" rx="2" fill="#c7d2fe"/>
+                    <rect x="35" y="62" width="15" height="5" rx="2" fill="#a5b4fc"/>
+                </svg>
+            </div>
+        );
 
         return (
             <div className="flex flex-col h-full">
                 <div className="p-4 border-b border-slate-700 flex items-center">
                     <AppIcon />
                     <div className="overflow-hidden">
-                        <h1 className="text-xl font-bold text-white truncate">{appConfig.appName || t('appName')}</h1>
-                        <p className="text-sm text-slate-300 truncate">{isGuest ? t('guestMode') : (appConfig.appDescription || t('appDescription'))}</p>
+                        <h1 className="text-xl font-bold text-white truncate">{t('appName')}</h1>
+                        <p className="text-sm text-slate-300 truncate">{isGuest ? t('guestMode') : currentUser.fullName}</p>
                     </div>
                 </div>
-                <nav className="flex-grow p-2">
+                <nav className="flex-grow p-2 space-y-1">
                     <ul>
                         {navItems.map(item => (
                             <li key={item.id}>
@@ -990,10 +976,10 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                         setActiveTab(item.id);
                                         if(isMobileView) setSidebarOpen(false);
                                     }}
-                                    className={`flex items-center px-3 py-3 text-lg rounded-md transition-colors ${
+                                    className={`flex items-center px-3 py-2.5 text-base rounded-md transition-colors ${
                                         activeTab === item.id 
-                                        ? 'bg-indigo-700 text-white' 
-                                        : 'text-slate-200 hover:bg-slate-600 hover:text-white'
+                                        ? 'bg-indigo-600 text-white font-semibold' 
+                                        : 'text-slate-200 hover:bg-slate-700 hover:text-white'
                                     }`}
                                 >
                                     <div className="w-5 h-5 mr-3 flex items-center justify-center">{item.icon}</div>
@@ -1007,7 +993,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                     <a
                         href="#"
                         onClick={(e) => { e.preventDefault(); onLogout(); }}
-                        className="flex items-center px-3 py-3 text-lg rounded-md text-slate-200 hover:bg-slate-600 hover:text-white transition-colors"
+                        className="flex items-center px-3 py-3 text-base rounded-md text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
                     >
                         <LogoutIcon />
                         <span>{isGuest ? t('exit') : t('logout')}</span>
@@ -1017,26 +1003,31 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         );
     };
 
+    const activeTabLabel = navItems.find(item => item.id === activeTab)?.label || '';
+
     return (
         <div className="flex h-screen bg-slate-100 font-sans">
-            <aside className="hidden lg:block w-64 bg-slate-800 text-white shadow-lg">
+            <aside className="hidden lg:block w-64 bg-slate-900 text-white shadow-lg">
                 <SidebarContent />
             </aside>
             
             {isSidebarOpen && (
                  <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setSidebarOpen(false)}>
                     <div className="absolute inset-0 bg-black opacity-50"></div>
-                     <aside className="relative z-40 w-64 bg-slate-800 text-white h-full shadow-lg">
+                     <aside className="relative z-40 w-64 bg-slate-900 text-white h-full shadow-lg">
                         <SidebarContent />
                     </aside>
                 </div>
             )}
 
             <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white shadow-sm p-4 flex items-center justify-between lg:justify-end">
-                    <button className="lg:hidden text-slate-500" onClick={() => setSidebarOpen(true)}>
-                        <MenuIcon />
-                    </button>
+                <header className="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+                    <div className="flex items-center">
+                         <button className="lg:hidden text-slate-500 mr-4" onClick={() => setSidebarOpen(true)}>
+                            <MenuIcon />
+                        </button>
+                        <h2 className="text-xl font-bold text-slate-800">{activeTabLabel}</h2>
+                    </div>
                     <div className="flex items-center space-x-4">
                         {/* Header controls can be added here */}
                     </div>
@@ -1067,6 +1058,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             </main>
 
             {modal.type === 'deleteConfirm' && <DeleteConfirmationModal />}
+             {modal.type === 'devAccess' && (
+                <Modal title={t('devAccess')}>
+                   <DevAccessModalContent />
+                </Modal>
+            )}
             {modal.type === 'viewPayslip' && modal.data && (
                 <Modal title={t('payslip')}>
                     <div className="max-h-[80vh] overflow-y-auto">
@@ -1165,13 +1161,13 @@ const LoginRegister: React.FC<{
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 font-sans">
+        <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col justify-center items-center p-4 font-sans">
             <div className="max-w-md w-full mx-auto">
                 <AppIcon />
                 <h1 className="text-3xl font-bold text-center text-slate-800">{t('appName')}</h1>
                 <p className="text-center text-slate-500 mb-8">{t('appDescription')}</p>
                 
-                <div className="bg-white p-8 rounded-xl shadow-lg">
+                <div className="bg-white p-8 rounded-xl shadow-xl">
                     <h2 className="text-2xl font-semibold text-center text-slate-700 mb-6">{isLoginView ? t('login') : t('register')}</h2>
                     {error && <p className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4 text-sm">{error}</p>}
 
@@ -1213,7 +1209,7 @@ const LoginRegister: React.FC<{
                             </div>
                          )}
 
-                        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors transform hover:scale-105">
                             {isLoginView ? t('login') : t('register')}
                         </button>
                     </form>

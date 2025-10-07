@@ -67,3 +67,8 @@ export interface User {
   password: string; // In a real-world app, this should be a hash.
   contactNumber?: string;
 }
+
+export interface DevSettings {
+  admobBannerId: string;
+  adsenseClientId: string;
+}
