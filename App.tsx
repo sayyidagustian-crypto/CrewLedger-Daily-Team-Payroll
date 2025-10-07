@@ -208,8 +208,8 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                     <div className="space-y-2">
                          <label htmlFor="oneTimeCode" className="block text-sm font-medium text-slate-700">{t('oneTimeCode')}</label>
                         <div className="flex space-x-2">
-                             <input type="text" id="oneTimeCode" value={oneTimeCode} onChange={e => setOneTimeCode(e.target.value)} placeholder={t('enterCode')} className="flex-grow mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" />
-                            <button onClick={handleVerifyCode} className="px-4 py-2 mt-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">{t('verify')}</button>
+                             <input type="text" id="oneTimeCode" value={oneTimeCode} onChange={e => setOneTimeCode(e.target.value)} placeholder={t('enterCode')} className="flex-grow mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" />
+                            <button onClick={handleVerifyCode} className="px-4 py-3 mt-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">{t('verify')}</button>
                         </div>
                         {verificationMessage && <p className={`text-sm ${isCodeVerified ? 'text-green-600' : 'text-red-600'}`}>{verificationMessage}</p>}
                     </div>
@@ -225,11 +225,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                          <p className="text-sm text-slate-500">{t('devSettingsInfo')}</p>
                         <div>
                              <label htmlFor="admobBannerId" className="block text-sm font-medium text-slate-700">{t('admobBannerId')}</label>
-                             <input type="text" id="admobBannerId" value={formData.admobBannerId} onChange={e => setFormData({...formData, admobBannerId: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
+                             <input type="text" id="admobBannerId" value={formData.admobBannerId} onChange={e => setFormData({...formData, admobBannerId: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
                         </div>
                         <div>
                              <label htmlFor="adsenseClientId" className="block text-sm font-medium text-slate-700">{t('adsenseClientId')}</label>
-                             <input type="text" id="adsenseClientId" value={formData.adsenseClientId} onChange={e => setFormData({...formData, adsenseClientId: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
+                             <input type="text" id="adsenseClientId" value={formData.adsenseClientId} onChange={e => setFormData({...formData, adsenseClientId: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
                         </div>
                         <div className="flex justify-end space-x-2 pt-2">
                             <button type="button" onClick={closeModal} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('cancel')}</button>
@@ -281,11 +281,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-slate-700">{t('fullName')}</label>
-                    <input type="text" id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
+                    <input type="text" id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
                 </div>
                 <div>
                     <label htmlFor="position" className="block text-sm font-medium text-slate-700">{t('positionOptional')}</label>
-                    <input type="text" id="position" value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" />
+                    <input type="text" id="position" value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" />
                 </div>
                 <div>
                      <label className="block text-sm font-medium text-slate-700">{t('profilePictureOptional')}</label>
@@ -297,7 +297,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 </div>
                  <div>
                     <label htmlFor="status" className="block text-sm font-medium text-slate-700">{t('status')}</label>
-                    <select id="status" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as 'Active' | 'Inactive'})} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900">
+                    <select id="status" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as 'Active' | 'Inactive'})} className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900">
                         <option value="Active">{t('active')}</option>
                         <option value="Inactive">{t('inactive')}</option>
                     </select>
@@ -313,9 +313,9 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div>
                  <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('employees')}</h2>
-                    <button onClick={() => openModal('addEmployee')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center transition-colors transform hover:scale-105"><UserPlusIcon />{t('addEmployee')}</button>
+                    <button onClick={() => openModal('addEmployee')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><UserPlusIcon />{t('addEmployee')}</button>
                 </div>
-                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
+                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
                     <ul className="divide-y divide-slate-200">
                         {employees.length > 0 ? employees.map(emp => (
                             <li key={emp.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -373,11 +373,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label htmlFor="taskName" className="block text-sm font-medium text-slate-700">{t('taskJobName')}</label>
-                    <input type="text" id="taskName" value={formData.taskName} onChange={e => setFormData({...formData, taskName: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
+                    <input type="text" id="taskName" value={formData.taskName} onChange={e => setFormData({...formData, taskName: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
                 </div>
                 <div>
                     <label htmlFor="rate" className="block text-sm font-medium text-slate-700">{t('ratePerUnit')}</label>
-                    <input type="number" id="rate" step="any" value={formData.rate} onChange={e => setFormData({...formData, rate: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
+                    <input type="number" id="rate" step="any" value={formData.rate} onChange={e => setFormData({...formData, rate: e.target.value})} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900" required />
                 </div>
                  <div className="flex justify-end space-x-2 pt-4">
                     <button type="button" onClick={closeModal} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('cancel')}</button>
@@ -390,9 +390,9 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div>
                  <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('rates')}</h2>
-                    <button onClick={() => openModal('addRate')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center transition-colors transform hover:scale-105"><TagIcon /> {t('addRate')}</button>
+                    <button onClick={() => openModal('addRate')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><TagIcon /> {t('addRate')}</button>
                 </div>
-                 <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
+                 <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
                     <ul className="divide-y divide-slate-200">
                         {pieceRates.length > 0 ? pieceRates.map(rate => (
                             <li key={rate.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -471,11 +471,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Entry Form */}
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 space-y-4 transition-shadow hover:shadow-lg">
                          <h2 className="text-xl font-bold text-slate-800">{t('dailyGroupEntry')}</h2>
                          <div>
                             <label htmlFor="logDate" className="block text-sm font-medium text-slate-700 mb-1">{t('date')}</label>
-                            <input type="date" id="logDate" value={logDate} onChange={e => setLogDate(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
+                            <input type="date" id="logDate" value={logDate} onChange={e => setLogDate(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
                         </div>
                         <div>
                              <label className="block text-sm font-medium text-slate-700 mb-1">{t('selectPresentEmployees')}</label>
@@ -492,13 +492,13 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         <div className="border-t pt-4 space-y-2">
                              <h3 className="text-lg font-semibold text-slate-700">{t('addTask')}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <select value={newTask.pieceRateId} onChange={e => setNewTask({...newTask, pieceRateId: e.target.value})} className="block w-full text-sm border-slate-300 rounded-md text-slate-900">
+                                <select value={newTask.pieceRateId} onChange={e => setNewTask({...newTask, pieceRateId: e.target.value})} className="block w-full text-base border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="">{t('selectTask')}</option>
                                     {pieceRates.map(r => <option key={r.id} value={r.id}>{r.taskName}</option>)}
                                 </select>
-                                <input type="number" value={newTask.quantity} onChange={e => setNewTask({...newTask, quantity: e.target.value})} placeholder={t('totalQuantity')} className="block w-full text-sm border-slate-300 rounded-md text-slate-900" />
+                                <input type="number" value={newTask.quantity} onChange={e => setNewTask({...newTask, quantity: e.target.value})} placeholder={t('totalQuantity')} className="block w-full text-base border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:ring-indigo-500 focus:border-indigo-500" />
                             </div>
-                            <button onClick={handleAddTask} className="w-full bg-slate-200 text-slate-800 py-2 rounded-md hover:bg-slate-300 font-semibold transition-colors">{t('addTaskToList')}</button>
+                            <button onClick={handleAddTask} className="w-full bg-slate-200 text-slate-800 py-3 rounded-lg hover:bg-slate-300 font-semibold transition-colors">{t('addTaskToList')}</button>
                         </div>
 
                          {/* Current Task List */}
@@ -522,11 +522,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                 </div>
                             </div>
                         )}
-                        <button onClick={handleSaveLog} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center transition-colors transform hover:scale-105"><SaveIcon/>{t('saveDailyLog')}</button>
+                        <button onClick={handleSaveLog} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><SaveIcon/>{t('saveDailyLog')}</button>
                     </div>
 
                      {/* Todays Logs */}
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow hover:shadow-lg">
                         <h2 className="text-xl font-bold text-slate-800">{t('logForDate')} {formatDate(logDate)}</h2>
                         <div className="mt-4 space-y-4 max-h-[70vh] overflow-y-auto">
                             {todaysLogs.length > 0 ? todaysLogs.map(log => (
@@ -625,17 +625,17 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             };
 
             return (
-                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 border-t-4 border-indigo-500">
+                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 border-t-4 border-indigo-500 transition-shadow hover:shadow-lg">
                     <h2 className="text-xl font-bold text-slate-800">{t('bulkGenerate')}</h2>
                     <p className="text-slate-600 mt-2">{t('bulkGenerateDescription')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                          <div>
                              <label htmlFor="bulk-period" className="block text-sm font-medium text-slate-700">{t('periodMonth')}</label>
-                            <input type="month" id="bulk-period" value={bulkPeriod} onChange={e => setBulkPeriod(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                            <input type="month" id="bulk-period" value={bulkPeriod} onChange={e => setBulkPeriod(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
                         </div>
                     </div>
                      <div className="mt-4">
-                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg hover:bg-indigo-600 flex items-center justify-center transition-colors transform hover:scale-105">
+                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg hover:bg-indigo-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105">
                             <UsersIcon />
                             <span className="ml-2">{t('bulkGeneratePayslips')}</span>
                         </button>
@@ -658,31 +658,31 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
         return (
             <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow hover:shadow-lg">
                     <h2 className="text-xl font-bold text-slate-800">{t('generatePayslip')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
                             <label htmlFor="employee" className="block text-sm font-medium text-slate-700">{t('selectEmployee')}</label>
-                            <select id="employee" value={employeeId} onChange={e => setEmployeeId(e.target.value)} className="mt-1 block w-full text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900">
+                            <select id="employee" value={employeeId} onChange={e => setEmployeeId(e.target.value)} className="mt-1 block w-full text-base p-3 border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900">
                                 <option value="">{t('selectEmployeeOption')}</option>
                                 {activeEmployees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
                             </select>
                         </div>
                         <div>
                              <label htmlFor="period" className="block text-sm font-medium text-slate-700">{t('periodMonth')}</label>
-                            <input type="month" id="period" value={period} onChange={e => setPeriod(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                            <input type="month" id="period" value={period} onChange={e => setPeriod(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
                         </div>
                         <div>
                              <label htmlFor="allowance" className="block text-sm font-medium text-slate-700">{t('allowanceBonus')}</label>
-                            <input type="number" id="allowance" value={allowance} onChange={e => setAllowance(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                            <input type="number" id="allowance" value={allowance} onChange={e => setAllowance(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
                         </div>
                         <div>
                              <label htmlFor="deduction" className="block text-sm font-medium text-slate-700">{t('deductions')}</label>
-                            <input type="number" id="deduction" value={deduction} onChange={e => setDeduction(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                            <input type="number" id="deduction" value={deduction} onChange={e => setDeduction(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
                         </div>
                     </div>
                     <div className="mt-4">
-                        <button onClick={handleSingleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center transition-colors transform hover:scale-105">
+                        <button onClick={handleSingleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105">
                             <SparklesIcon className="h-5 w-5 mr-2" />
                             {t('generatePayslip')}
                         </button>
@@ -736,7 +736,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         return (
              <div>
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('payslipHistory')}</h2>
-                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
+                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
                     <ul className="divide-y divide-slate-200">
                         {sortedPayslips.length > 0 ? sortedPayslips.map(p => (
                             <li key={p.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -832,7 +832,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         };
         
         const SettingsCard: React.FC<{title: string; description: string; children: React.ReactNode; className?: string}> = ({ title, description, children, className }) => (
-            <div className={`bg-white p-6 rounded-xl shadow-md border border-slate-200 ${className || ''}`}>
+            <div className={`bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow duration-300 hover:shadow-lg ${className || ''}`}>
                 <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
                 <p className="text-sm text-slate-500 mt-1">{description}</p>
                 <div className="mt-4">{children}</div>
@@ -859,7 +859,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         id="language-select"
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as 'en' | 'id')}
-                        className="mt-1 block w-full md:w-1/2 pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900"
+                        className="mt-1 block w-full md:w-1/2 pl-3 pr-10 py-3 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-900"
                     >
                         <option value="en">{t('english')}</option>
                         <option value="id">{t('indonesian')}</option>
@@ -867,7 +867,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 </SettingsCard>
 
                  <SettingsCard title={t('localBackup')} description={t('localBackupDesc')}>
-                     <button onClick={handleBackup} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center transition-colors transform hover:scale-105"><DownloadIcon />{t('backupToFile')}</button>
+                     <button onClick={handleBackup} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><DownloadIcon />{t('backupToFile')}</button>
                 </SettingsCard>
                 
                  <SettingsCard title={t('localRestore')} description={t('localRestoreDesc')}>
@@ -877,7 +877,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                     </div>
                     <div className="mt-4">
                         <input type="file" id="restoreFile" accept=".json" onChange={handleRestore} className="hidden" ref={fileRestoreRef} />
-                        <label htmlFor="restoreFile" className="cursor-pointer bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center w-max transition-colors transform hover:scale-105"><UploadIcon />{t('restoreFromFile')}</label>
+                        <label htmlFor="restoreFile" className="cursor-pointer bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 flex items-center w-max shadow-md hover:shadow-lg transition-all transform hover:scale-105"><UploadIcon />{t('restoreFromFile')}</label>
                     </div>
                 </SettingsCard>
                 
@@ -886,8 +886,8 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         <p dangerouslySetInnerHTML={{ __html: t('aboutThanks') }} />
                         <div>
                             <p>{t('aboutBugReportPrompt')}</p>
-                            <a href="https://aistudio.google.com/app/creations/aistudio-gaji-borongan-project" target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline font-semibold inline-block mt-1">
-                                {t('aboutBugReportLink')}
+                            <a href="mailto:sayyidagustian@gmail.com" className="text-sm text-indigo-600 hover:underline font-semibold">
+                                sayyidagustian@gmail.com
                             </a>
                         </div>
                         <div>
@@ -1007,14 +1007,14 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
     return (
         <div className="flex h-screen bg-slate-100 font-sans">
-            <aside className="hidden lg:block w-64 bg-slate-900 text-white shadow-lg">
+            <aside className="hidden lg:block w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-lg">
                 <SidebarContent />
             </aside>
             
             {isSidebarOpen && (
                  <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setSidebarOpen(false)}>
                     <div className="absolute inset-0 bg-black opacity-50"></div>
-                     <aside className="relative z-40 w-64 bg-slate-900 text-white h-full shadow-lg">
+                     <aside className="relative z-40 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white h-full shadow-lg">
                         <SidebarContent />
                     </aside>
                 </div>
