@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gaji-borongan-v6'; // Version bumped to trigger update
+
+const CACHE_NAME = 'gaji-borongan-v7'; // Version bumped to trigger update and clear old caches
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -45,13 +46,14 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event: serve from cache, fall back to network, and cache new assets
+// Fetch event: serve from cache, fall back to network, and cache new valid assets
 self.addEventListener('fetch', (event) => {
   // We only want to handle GET requests
   if (event.request.method !== 'GET') {
     return;
   }
   
+  // Strategy: Cache falling back to network
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       // If we have a cached response, return it.
@@ -65,10 +67,11 @@ self.addEventListener('fetch', (event) => {
         const responseToCache = networkResponse.clone();
         
         caches.open(CACHE_NAME).then(cache => {
-          // Cache the new response for future offline use.
-          // We check if the response is valid before caching.
-          if(networkResponse.ok) {
-            cache.put(event.request, responseToCache);
+          // IMPORTANT: Add a check to only cache valid responses.
+          // This prevents caching of errors or opaque responses which can cause issues.
+          // 'basic' type indicates requests from our origin. Others might be from CDNs or extensions.
+          if (networkResponse.ok && networkResponse.type === 'basic') {
+             cache.put(event.request, responseToCache);
           }
         });
         
@@ -76,7 +79,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(error => {
         // This will happen if the user is offline and the resource is not cached.
         console.error('Fetch failed; user is likely offline.', event.request.url, error);
-        // Let the browser handle the error.
+        // You could return a custom offline page here if you had one in the cache.
       });
     })
   );
