@@ -125,7 +125,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
     const PolicyModal: React.FC = () => (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative animate-fade-in-up">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative animate-fade-in-up">
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('policyTitle')}</h2>
                 <div className="space-y-4 text-slate-600 max-h-[60vh] overflow-y-auto pr-2">
                     <p>{t('policyWelcome')}</p>
@@ -152,7 +152,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
     const Modal: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-40 animate-fade-in" onClick={closeModal}>
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center pb-3">
                     <h3 className="text-xl font-bold text-slate-900">{title}</h3>
                     <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">
@@ -313,9 +313,9 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div>
                  <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('employees')}</h2>
-                    <button onClick={() => openModal('addEmployee')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><UserPlusIcon />{t('addEmployee')}</button>
+                    <button onClick={() => openModal('addEmployee')} className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105"><UserPlusIcon />{t('addEmployee')}</button>
                 </div>
-                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
+                <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-xl">
                     <ul className="divide-y divide-slate-200">
                         {employees.length > 0 ? employees.map(emp => (
                             <li key={emp.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -390,9 +390,9 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div>
                  <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">{t('rates')}</h2>
-                    <button onClick={() => openModal('addRate')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><TagIcon /> {t('addRate')}</button>
+                    <button onClick={() => openModal('addRate')} className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105"><TagIcon /> {t('addRate')}</button>
                 </div>
-                 <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
+                 <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-xl">
                     <ul className="divide-y divide-slate-200">
                         {pieceRates.length > 0 ? pieceRates.map(rate => (
                             <li key={rate.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -471,7 +471,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Entry Form */}
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 space-y-4 transition-shadow hover:shadow-lg">
+                    <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 space-y-4 transition-shadow hover:shadow-xl">
                          <h2 className="text-xl font-bold text-slate-800">{t('dailyGroupEntry')}</h2>
                          <div>
                             <label htmlFor="logDate" className="block text-sm font-medium text-slate-700 mb-1">{t('date')}</label>
@@ -522,11 +522,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                 </div>
                             </div>
                         )}
-                        <button onClick={handleSaveLog} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105"><SaveIcon/>{t('saveDailyLog')}</button>
+                        <button onClick={handleSaveLog} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105"><SaveIcon/>{t('saveDailyLog')}</button>
                     </div>
 
                      {/* Todays Logs */}
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow hover:shadow-lg">
+                    <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 transition-shadow hover:shadow-xl">
                         <h2 className="text-xl font-bold text-slate-800">{t('logForDate')} {formatDate(logDate)}</h2>
                         <div className="mt-4 space-y-4 max-h-[70vh] overflow-y-auto">
                             {todaysLogs.length > 0 ? todaysLogs.map(log => (
@@ -625,7 +625,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             };
 
             return (
-                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 border-t-4 border-indigo-500 transition-shadow hover:shadow-lg">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 border-t-4 border-indigo-500 transition-shadow hover:shadow-xl">
                     <h2 className="text-xl font-bold text-slate-800">{t('bulkGenerate')}</h2>
                     <p className="text-slate-600 mt-2">{t('bulkGenerateDescription')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -635,7 +635,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         </div>
                     </div>
                      <div className="mt-4">
-                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-indigo-500 text-white font-bold py-3 rounded-lg hover:bg-indigo-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                        <button onClick={() => openModal('bulkGenerate')} className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                             <UsersIcon />
                             <span className="ml-2">{t('bulkGeneratePayslips')}</span>
                         </button>
@@ -658,7 +658,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
         return (
             <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow hover:shadow-lg">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 transition-shadow hover:shadow-xl">
                     <h2 className="text-xl font-bold text-slate-800">{t('generatePayslip')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
@@ -682,7 +682,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         </div>
                     </div>
                     <div className="mt-4">
-                        <button onClick={handleSingleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                        <button onClick={handleSingleGenerate} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                             <SparklesIcon className="h-5 w-5 mr-2" />
                             {t('generatePayslip')}
                         </button>
@@ -692,7 +692,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 {remoteConfigService.isFeatureEnabled('enableBulkGenerate') && <BulkGenerator />}
 
                 {periodLogs.length > 0 && (
-                     <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 mt-6">
+                     <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-6">
                         <h3 className="text-lg font-semibold text-slate-700">{t('dailyPieceRateEarnings')}</h3>
                         <div className="overflow-x-auto border rounded-lg mt-2 max-h-60">
                              <table className="w-full text-sm text-left text-slate-500">
@@ -736,7 +736,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         return (
              <div>
                 <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('payslipHistory')}</h2>
-                <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-lg">
+                <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-200 transition-shadow hover:shadow-xl">
                     <ul className="divide-y divide-slate-200">
                         {sortedPayslips.length > 0 ? sortedPayslips.map(p => (
                             <li key={p.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
@@ -832,7 +832,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         };
         
         const SettingsCard: React.FC<{title: string; description: string; children: React.ReactNode; className?: string}> = ({ title, description, children, className }) => (
-            <div className={`bg-white p-6 rounded-xl shadow-md border border-slate-200 transition-shadow duration-300 hover:shadow-lg ${className || ''}`}>
+            <div className={`bg-white p-6 rounded-xl shadow-lg border border-slate-200/80 transition-shadow duration-300 hover:shadow-xl ${className || ''}`}>
                 <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
                 <p className="text-sm text-slate-500 mt-1">{description}</p>
                 <div className="mt-4">{children}</div>
@@ -888,12 +888,6 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                             <p>{t('aboutBugReportPrompt')}</p>
                             <a href="mailto:sayyidagustian@gmail.com" className="text-sm text-indigo-600 hover:underline font-semibold">
                                 sayyidagustian@gmail.com
-                            </a>
-                        </div>
-                        <div>
-                            <p className="font-semibold">{t('aboutOfficialSite')}:</p>
-                            <a href="https://crewledger.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline font-semibold">
-                                https://crewledger.netlify.app/
                             </a>
                         </div>
                     </div>
@@ -978,7 +972,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                     }}
                                     className={`flex items-center px-3 py-2.5 text-base rounded-md transition-colors ${
                                         activeTab === item.id 
-                                        ? 'bg-indigo-600 text-white font-semibold' 
+                                        ? 'bg-indigo-700 text-white font-semibold shadow-inner' 
                                         : 'text-slate-200 hover:bg-slate-700 hover:text-white'
                                     }`}
                                 >
@@ -1006,15 +1000,15 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
     const activeTabLabel = navItems.find(item => item.id === activeTab)?.label || '';
 
     return (
-        <div className="flex h-screen bg-slate-100 font-sans">
-            <aside className="hidden lg:block w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-lg">
+        <div className="flex h-screen bg-slate-200 font-sans">
+            <aside className="hidden lg:block w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-lg">
                 <SidebarContent />
             </aside>
             
             {isSidebarOpen && (
                  <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setSidebarOpen(false)}>
                     <div className="absolute inset-0 bg-black opacity-50"></div>
-                     <aside className="relative z-40 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white h-full shadow-lg">
+                     <aside className="relative z-40 w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-white h-full shadow-lg">
                         <SidebarContent />
                     </aside>
                 </div>
@@ -1149,7 +1143,7 @@ const LoginRegister: React.FC<{
     };
 
     const AppIcon = () => (
-        <div className="h-16 w-16 mx-auto mb-4 rounded-2xl bg-white p-1.5 shadow-md">
+        <div className="h-16 w-16 mx-auto mb-4 rounded-2xl bg-white p-1.5 shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                 <rect width="100" height="100" rx="20" fill="#4f46e5"/>
                 <rect x="25" y="25" width="50" height="60" rx="5" fill="white"/>
@@ -1161,13 +1155,13 @@ const LoginRegister: React.FC<{
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col justify-center items-center p-4 font-sans">
+        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-slate-300 flex flex-col justify-center items-center p-4 font-sans">
             <div className="max-w-md w-full mx-auto">
                 <AppIcon />
                 <h1 className="text-3xl font-bold text-center text-slate-800">{t('appName')}</h1>
                 <p className="text-center text-slate-500 mb-8">{t('appDescription')}</p>
                 
-                <div className="bg-white p-8 rounded-xl shadow-xl">
+                <div className="bg-white p-8 rounded-2xl shadow-2xl">
                     <h2 className="text-2xl font-semibold text-center text-slate-700 mb-6">{isLoginView ? t('login') : t('register')}</h2>
                     {error && <p className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4 text-sm">{error}</p>}
 
@@ -1209,7 +1203,7 @@ const LoginRegister: React.FC<{
                             </div>
                          )}
 
-                        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors transform hover:scale-105">
+                        <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors transform hover:scale-105">
                             {isLoginView ? t('login') : t('register')}
                         </button>
                     </form>

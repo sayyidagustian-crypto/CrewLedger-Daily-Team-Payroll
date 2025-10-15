@@ -85,7 +85,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 rounded-xl shadow-md border border-slate-200 transition-shadow hover:shadow-xl">
+    <div className="flex flex-col h-full bg-slate-100 rounded-xl shadow-lg border border-slate-200/80 transition-shadow hover:shadow-2xl">
       <div ref={payslipRef} className="bg-white p-6 md:p-8 flex-grow rounded-t-xl">
         <header className="flex justify-between items-start border-b-2 border-indigo-500 pb-4 mb-6">
           <div>
@@ -153,7 +153,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             </div>
         </section>
 
-        <footer className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white p-6 rounded-lg mt-6 text-right shadow-inner">
+        <footer className="bg-gradient-to-br from-indigo-700 to-blue-600 text-white p-6 rounded-lg mt-6 text-right shadow-inner shadow-lg shadow-indigo-500/20">
             <p className="text-indigo-200 font-semibold uppercase tracking-wider text-sm">{t('netSalary')}</p>
             <p className="text-4xl font-bold font-mono">{formatCurrency(payslip.netSalary)}</p>
         </footer>
@@ -162,14 +162,14 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         <button
           onClick={handleShare}
           disabled={isSharing}
-          className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all flex items-center justify-center disabled:bg-slate-400 transform hover:scale-105 shadow-md hover:shadow-lg"
+          className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all flex items-center justify-center disabled:bg-slate-400 transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
           <ShareIcon />
           {isSharing ? t('sharing') : t('share')}
         </button>
         <button
           onClick={handleExportPDF}
-          className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-md hover:shadow-lg"
+          className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
           <DownloadIcon />
           {t('exportToPDF')}
