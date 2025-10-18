@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import type { Payslip } from '../types';
 import { DownloadIcon, ShareIcon, UserCircleIcon } from './icons';
@@ -22,7 +23,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     const { jsPDF } = window.jspdf;
     const html2canvas = window.html2canvas;
 
-    html2canvas(payslipRef.current, { scale: 2, backgroundColor: '#ffffff' }).then((canvas) => {
+    html2canvas(payslipRef.current, { scale: 3, backgroundColor: '#ffffff' }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -42,7 +43,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     setIsSharing(true);
 
     try {
-        const canvas = await window.html2canvas(payslipRef.current, { scale: 2, backgroundColor: '#ffffff' });
+        const canvas = await window.html2canvas(payslipRef.current, { scale: 3, backgroundColor: '#ffffff' });
         canvas.toBlob(async (blob) => {
             if (blob) {
                 const file = new File([blob], `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.png`, { type: 'image/png' });
@@ -86,7 +87,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
 
   return (
     <div className="flex flex-col h-full bg-slate-100 rounded-xl shadow-lg border border-slate-200/80 transition-shadow hover:shadow-2xl">
-      <div ref={payslipRef} className="bg-white p-6 md:p-8 flex-grow rounded-t-xl">
+      <div ref={payslipRef} className="bg-white p-4 sm:p-6 md:p-8 flex-grow rounded-t-xl">
         <header className="flex justify-between items-start border-b-2 border-indigo-500 pb-4 mb-6">
           <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text tracking-wider font-serif">{t('payslip')}</h1>
@@ -115,21 +116,21 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
                 <table className="w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-100">
                     <tr>
-                        <th scope="col" className="px-4 py-3 font-semibold">{t('date')}</th>
-                        <th scope="col" className="px-4 py-3 font-semibold">{t('tasks')}</th>
-                        <th scope="col" className="px-4 py-3 text-right font-semibold">{t('groupTotal')}</th>
-                        <th scope="col" className="px-4 py-3 text-center font-semibold">{t('presentCrew')}</th>
-                        <th scope="col" className="px-4 py-3 text-right font-semibold">{t('yourEarning')}</th>
+                        <th scope="col" className="px-2 py-3 sm:px-4 font-semibold">{t('date')}</th>
+                        <th scope="col" className="px-2 py-3 sm:px-4 font-semibold">{t('tasks')}</th>
+                        <th scope="col" className="px-2 py-3 sm:px-4 text-right font-semibold">{t('groupTotal')}</th>
+                        <th scope="col" className="px-2 py-3 sm:px-4 text-center font-semibold">{t('presentCrew')}</th>
+                        <th scope="col" className="px-2 py-3 sm:px-4 text-right font-semibold">{t('yourEarning')}</th>
                     </tr>
                     </thead>
                     <tbody>
                     {payslip.logs.map((log, index) => (
                         <tr key={index} className="bg-white border-b last:border-b-0 hover:bg-slate-50">
-                            <td className="px-4 py-3 whitespace-nowrap">{formatDate(log.date)}</td>
-                            <td className="px-4 py-3 font-medium text-slate-800">{log.taskName}</td>
-                            <td className="px-4 py-3 text-right font-mono">{formatCurrency(log.totalDailyGross)}</td>
-                            <td className="px-4 py-3 text-center font-mono">{log.workersPresent}</td>
-                            <td className="px-4 py-3 text-right font-mono font-semibold text-indigo-700">{formatCurrency(log.yourEarning)}</td>
+                            <td className="px-2 py-3 sm:px-4 whitespace-nowrap">{formatDate(log.date)}</td>
+                            <td className="px-2 py-3 sm:px-4 font-medium text-slate-800">{log.taskName}</td>
+                            <td className="px-2 py-3 sm:px-4 text-right font-mono">{formatCurrency(log.totalDailyGross)}</td>
+                            <td className="px-2 py-3 sm:px-4 text-center font-mono">{log.workersPresent}</td>
+                            <td className="px-2 py-3 sm:px-4 text-right font-mono font-semibold text-indigo-700">{formatCurrency(log.yourEarning)}</td>
                         </tr>
                     ))}
                     </tbody>

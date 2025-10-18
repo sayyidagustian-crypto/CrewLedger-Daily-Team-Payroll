@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 
 // 1. Define Translation Data
@@ -181,7 +182,7 @@ const translations = {
     allowancesBonus: 'Allowances / Bonus',
     netSalary: 'NET SALARY',
     share: 'Share',
-    sharing: 'Sharing...',
+    sharing: 'Preparing image...',
     shareNotSupported: 'Sharing is not supported on this browser.',
     shareError: 'An error occurred while trying to share.',
     exportToPDF: 'Export to PDF',
@@ -365,7 +366,7 @@ const translations = {
     allowancesBonus: 'Tunjangan / Bonus',
     netSalary: 'GAJI BERSIH',
     share: 'Bagikan',
-    sharing: 'Membagikan...',
+    sharing: 'Menyiapkan gambar...',
     shareNotSupported: 'Berbagi tidak didukung di peramban ini.',
     shareError: 'Terjadi kesalahan saat mencoba berbagi.',
     exportToPDF: 'Ekspor ke PDF',

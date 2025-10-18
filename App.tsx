@@ -152,7 +152,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
 
     const Modal: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-40 animate-fade-in" onClick={closeModal}>
-            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-4 sm:p-6 relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center pb-3">
                     <h3 className="text-xl font-bold text-slate-900">{title}</h3>
                     <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">
