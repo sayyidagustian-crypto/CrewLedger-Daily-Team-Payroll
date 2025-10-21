@@ -20,10 +20,16 @@ export interface DailyTask {
   subTotal: number;
 }
 
+export interface CustomTask {
+  name: string;
+  totalEarning: number;
+}
+
 export interface DailyGroupLog {
   id: string;
   date: string; // YYYY-MM-DD
   tasks: DailyTask[];
+  customTasks?: CustomTask[];
   presentEmployeeIds: string[];
   totalGrossEarnings: number;
   individualEarnings: number;

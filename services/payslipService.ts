@@ -23,9 +23,13 @@ class PayslipService {
         });
 
         const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
+            const standardTaskNames = dayLog.tasks.map(t => t.taskName);
+            const customTaskNames = dayLog.customTasks?.map(t => t.name) || [];
+            const allTaskNames = [...standardTaskNames, ...customTaskNames];
+
             return {
                 date: dayLog.date,
-                taskName: dayLog.tasks.map(t => t.taskName).join(', '),
+                taskName: allTaskNames.join(', ') || '-',
                 totalDailyGross: dayLog.totalGrossEarnings,
                 workersPresent: dayLog.presentEmployeeIds.length,
                 yourEarning: dayLog.individualEarnings
@@ -76,9 +80,13 @@ class PayslipService {
     
             if (grossSalary > 0) {
                  const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
+                    const standardTaskNames = dayLog.tasks.map(t => t.taskName);
+                    const customTaskNames = dayLog.customTasks?.map(t => t.name) || [];
+                    const allTaskNames = [...standardTaskNames, ...customTaskNames];
+                    
                     return {
                         date: dayLog.date,
-                        taskName: dayLog.tasks.map(t => t.taskName).join(', '),
+                        taskName: allTaskNames.join(', ') || '-',
                         totalDailyGross: dayLog.totalGrossEarnings,
                         workersPresent: dayLog.presentEmployeeIds.length,
                         yourEarning: dayLog.individualEarnings

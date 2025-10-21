@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'gaji-borongan-v10'; // Versi dinaikkan untuk memicu pembaruan dan membersihkan cache lama
+const CACHE_NAME = 'gaji-borongan-v13'; // Versi dinaikkan untuk pembaruan paksa dan perbaikan cache.
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -14,20 +14,41 @@ const APP_SHELL_URLS = [
   'https://aistudiocdn.com/react-dom@^19.2.0/client'
 ];
 
-// Event install: cache semua aset App Shell.
+// Event install: cache semua aset App Shell dengan strategi sekuensial yang lebih andal.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching App Shell');
-      // Menggunakan addAll untuk memastikan semua aset berhasil di-cache.
-      // Jika salah satu gagal, seluruh proses install akan gagal, yang lebih aman.
-      return cache.addAll(APP_SHELL_URLS);
-    }).catch(error => {
-      console.error('Gagal melakukan cache App Shell saat instalasi:', error);
-    })
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        console.log('Service Worker: Memulai proses caching App Shell secara sekuensial.');
+        
+        // Menggunakan loop for...of untuk caching sekuensial, bukan Promise.all (paralel).
+        // Ini lebih lambat tetapi lebih tangguh terhadap masalah jaringan.
+        for (const url of APP_SHELL_URLS) {
+          const request = new Request(url, { cache: 'reload' });
+          const response = await fetch(request);
+          
+          if (!response.ok) {
+            // Jika ada satu respons saja yang gagal, seluruh instalasi akan gagal.
+            throw new Error(`Gagal mengambil ${url}: status ${response.status}`);
+          }
+          
+          await cache.put(request, response.clone());
+           console.log(`Service Worker: Berhasil cache -> ${url}`);
+        }
+        
+        console.log('Service Worker: App Shell berhasil di-cache. Mengaktifkan...');
+        // Paksa service worker baru untuk aktif segera setelah instalasi selesai.
+        await self.skipWaiting();
+      } catch (error) {
+        console.error('Service Worker: Instalasi gagal karena gagal caching.', error);
+        // Lempar kembali error agar browser tahu instalasi gagal dan akan mencoba lagi.
+        throw error;
+      }
+    })()
   );
-  self.skipWaiting(); // Aktifkan service worker baru segera setelah instalasi selesai.
 });
+
 
 // Event activate: bersihkan cache lama yang tidak terpakai.
 self.addEventListener('activate', (event) => {

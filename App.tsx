@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings } from './types';
+import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings, CustomTask } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import { PayslipPreview } from './components/PayslipPreview';
 import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon, LogoutIcon, AtSymbolIcon, LockClosedIcon, IdentificationIcon, PhoneIcon, InformationCircleIcon } from './components/icons';
@@ -422,9 +422,17 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         const [presentEmployeeIds, setPresentEmployeeIds] = useState<string[]>([]);
         const [currentTasks, setCurrentTasks] = useState<DailyTask[]>([]);
         const [newTask, setNewTask] = useState<{pieceRateId: string, quantity: string}>({ pieceRateId: '', quantity: '' });
+        const [currentCustomTasks, setCurrentCustomTasks] = useState<CustomTask[]>([]);
+        const [newCustomTask, setNewCustomTask] = useState<{name: string, totalEarning: string}>({ name: '', totalEarning: '' });
 
         const todaysLogs = useMemo(() => dailyLogs.filter(log => log.date === logDate).sort((a, b) => parseInt(b.id) - parseInt(a.id)), [dailyLogs, logDate]);
-        const totalGross = useMemo(() => currentTasks.reduce((sum, task) => sum + task.subTotal, 0), [currentTasks]);
+        
+        const totalGross = useMemo(() => {
+            const pieceRateTotal = currentTasks.reduce((sum, task) => sum + task.subTotal, 0);
+            const customTaskTotal = currentCustomTasks.reduce((sum, task) => sum + task.totalEarning, 0);
+            return pieceRateTotal + customTaskTotal;
+        }, [currentTasks, currentCustomTasks]);
+        
         const individualEarnings = useMemo(() => presentEmployeeIds.length > 0 ? totalGross / presentEmployeeIds.length : 0, [totalGross, presentEmployeeIds]);
 
         const handleEmployeeToggle = (id: string) => {
@@ -448,8 +456,19 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             setNewTask({ pieceRateId: '', quantity: '' });
         };
 
+        const handleAddCustomTask = () => {
+            const earning = parseFloat(newCustomTask.totalEarning);
+            if (!newCustomTask.name.trim() || isNaN(earning) || earning <= 0) {
+                alert(t('alertEnterJobNameAndEarning'));
+                return;
+            }
+            setCurrentCustomTasks(prev => [...prev, { name: newCustomTask.name.trim(), totalEarning: earning }]);
+            setNewCustomTask({ name: '', totalEarning: '' });
+        };
+
+
         const handleSaveLog = () => {
-            if (!logDate || presentEmployeeIds.length === 0 || currentTasks.length === 0) {
+            if (!logDate || presentEmployeeIds.length === 0 || (currentTasks.length === 0 && currentCustomTasks.length === 0)) {
                 alert(t('alertFillAllFields'));
                 return;
             }
@@ -457,6 +476,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 id: Date.now().toString(),
                 date: logDate,
                 tasks: currentTasks,
+                customTasks: currentCustomTasks,
                 presentEmployeeIds,
                 totalGrossEarnings: totalGross,
                 individualEarnings
@@ -465,6 +485,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             // Reset form
             setPresentEmployeeIds([]);
             setCurrentTasks([]);
+            setCurrentCustomTasks([]);
         };
 
         return (
@@ -500,9 +521,19 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                             </div>
                             <button onClick={handleAddTask} className="w-full bg-slate-200 text-slate-800 py-3 rounded-lg hover:bg-slate-300 font-semibold transition-colors">{t('addTaskToList')}</button>
                         </div>
+                        
+                        {/* Custom Task Adder */}
+                        <div className="border-t pt-4 space-y-2">
+                            <h3 className="text-lg font-semibold text-slate-700">{t('freelanceJobsOptional')}</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <input type="text" value={newCustomTask.name} onChange={e => setNewCustomTask({...newCustomTask, name: e.target.value})} placeholder={t('jobName')} className="block w-full text-base border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <input type="number" value={newCustomTask.totalEarning} onChange={e => setNewCustomTask({...newCustomTask, totalEarning: e.target.value})} placeholder={t('totalEarnings')} className="block w-full text-base border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:ring-indigo-500 focus:border-indigo-500" />
+                            </div>
+                            <button onClick={handleAddCustomTask} className="w-full bg-slate-200 text-slate-800 py-3 rounded-lg hover:bg-slate-300 font-semibold transition-colors">{t('addFreelanceJob')}</button>
+                        </div>
 
                          {/* Current Task List */}
-                        {currentTasks.length > 0 && (
+                        {(currentTasks.length > 0 || currentCustomTasks.length > 0) && (
                              <div className="border-t pt-4">
                                 <h3 className="text-lg font-semibold text-slate-700">{t('todaysTaskList')}</h3>
                                 <ul className="divide-y divide-slate-200">
@@ -513,6 +544,15 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                                 <p className="text-sm text-slate-500">{task.quantity} x {formatCurrency(task.rate)} = {formatCurrency(task.subTotal)}</p>
                                             </div>
                                             <button onClick={() => setCurrentTasks(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 text-sm font-medium">{t('remove')}</button>
+                                        </li>
+                                    ))}
+                                    {currentCustomTasks.map((task, idx) => (
+                                        <li key={`custom-${idx}`} className="py-2 flex justify-between items-center">
+                                            <div>
+                                                <p className="font-medium text-slate-800">{task.name} <span className="text-xs bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-md">{t('freelanceJobTag')}</span></p>
+                                                <p className="text-sm text-slate-500">{formatCurrency(task.totalEarning)}</p>
+                                            </div>
+                                            <button onClick={() => setCurrentCustomTasks(prev => prev.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 text-sm font-medium">{t('remove')}</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -542,6 +582,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                     </div>
                                     <ul className="mt-2 text-sm text-slate-600 list-disc list-inside">
                                         {log.tasks.map((t, i) => <li key={i}>{t.taskName} ({t.quantity})</li>)}
+                                        {log.customTasks?.map((t, i) => <li key={`c-${i}`}>{t.name}</li>)}
                                     </ul>
                                 </div>
                             )) : <p className="text-slate-500 text-center py-8">{t('noLogEntries')}</p>}
@@ -575,7 +616,10 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 
                  const logs: PayslipLogEntry[] = relevantLogs.map(dayLog => ({
                     date: dayLog.date,
-                    taskName: dayLog.tasks.map(t => t.taskName).join(', '),
+                    taskName: [
+                        ...dayLog.tasks.map(t => t.taskName),
+                        ...(dayLog.customTasks?.map(t => t.name) || [])
+                    ].join(', '),
                     totalDailyGross: dayLog.totalGrossEarnings,
                     workersPresent: dayLog.presentEmployeeIds.length,
                     yourEarning: dayLog.individualEarnings

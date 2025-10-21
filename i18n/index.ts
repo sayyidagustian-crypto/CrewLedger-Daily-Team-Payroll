@@ -83,6 +83,12 @@ const translations = {
     noLogEntries: 'No log entries for this date.',
     alertFillAllFields: 'Please fill in the date, select at least one employee, and add at least one task.',
     alertSelectTaskAndQuantity: 'Please select a task and enter the quantity.',
+    freelanceJobsOptional: 'Freelance Jobs (Optional)',
+    jobName: 'Job Name',
+    totalEarnings: 'Total Earnings',
+    addFreelanceJob: '+ Add Freelance Job',
+    alertEnterJobNameAndEarning: 'Please enter a job name and a valid earning amount.',
+    freelanceJobTag: 'Freelance',
 
     // Payslip Generator
     generatePayslip: 'Generate Payslip',
@@ -181,15 +187,13 @@ const translations = {
     grossSalary: 'Gross Salary',
     allowancesBonus: 'Allowances / Bonus',
     netSalary: 'NET SALARY',
-    share: 'Share',
-    sharing: 'Preparing PDF...',
-    shareNotSupported: 'Sharing is not supported on this browser.',
-    shareError: 'An error occurred while trying to share.',
+    shareToWhatsApp: 'Share (WhatsApp)',
     downloadPDF: 'Download PDF',
     print: 'Print',
     jsPDFNotLoadedError: 'jsPDF library failed to load.',
     autoTableNotLoadedError: 'jsPDF-AutoTable plugin failed to load.',
     pdfGenerationFailedError: 'Could not generate PDF. Please try again. If the problem persists, try reloading the page.',
+    generatedWith: 'Generated with {{appName}}',
   },
   id: {
     // General
@@ -271,6 +275,12 @@ const translations = {
     noLogEntries: 'Tidak ada catatan untuk tanggal ini.',
     alertFillAllFields: 'Harap isi tanggal, pilih setidaknya satu karyawan, dan tambahkan setidaknya satu tugas.',
     alertSelectTaskAndQuantity: 'Silakan pilih tugas dan masukkan jumlahnya.',
+    freelanceJobsOptional: 'Pekerjaan Lepas (Opsional)',
+    jobName: 'Nama Pekerjaan',
+    totalEarnings: 'Total Pendapatan',
+    addFreelanceJob: '+ Tambah Pekerjaan Lepas',
+    alertEnterJobNameAndEarning: 'Harap masukkan nama pekerjaan dan jumlah pendapatan yang valid.',
+    freelanceJobTag: 'Pekerjaan Lepas',
 
     // Payslip Generator
     generatePayslip: 'Buat Slip Gaji',
@@ -369,15 +379,13 @@ const translations = {
     grossSalary: 'Gaji Kotor',
     allowancesBonus: 'Tunjangan / Bonus',
     netSalary: 'GAJI BERSIH',
-    share: 'Bagikan',
-    sharing: 'Menyiapkan PDF...',
-    shareNotSupported: 'Berbagi tidak didukung di peramban ini.',
-    shareError: 'Terjadi kesalahan saat mencoba berbagi.',
+    shareToWhatsApp: 'Bagikan (WhatsApp)',
     downloadPDF: 'Unduh PDF',
     print: 'Cetak',
     jsPDFNotLoadedError: 'Pustaka jsPDF gagal dimuat.',
     autoTableNotLoadedError: 'Plugin jsPDF-AutoTable gagal dimuat.',
     pdfGenerationFailedError: 'Tidak dapat membuat PDF. Silakan coba lagi. Jika masalah berlanjut, coba muat ulang halaman.',
+    generatedWith: 'Dibuat dengan {{appName}}',
   },
 };
 

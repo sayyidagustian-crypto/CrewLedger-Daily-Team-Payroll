@@ -1,9 +1,9 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 // FIX: Removed failing module augmentation for 'jspdf'. This approach is not compatible
 // with libraries loaded from a CDN. The code already handles the 'doc' object as 'any' type.
 import type { Payslip } from '../types';
-import { DownloadIcon, ShareIcon, UserCircleIcon, PrintIcon } from './icons';
+import { DownloadIcon, UserCircleIcon, PrintIcon, WhatsAppIcon } from './icons';
 import { useI18n } from '../i18n';
 
 // Global window object might not have these properties, so we declare them.
@@ -15,15 +15,15 @@ declare global {
 
 export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip }) => {
   const payslipRef = useRef<HTMLDivElement>(null);
-  const [isSharing, setIsSharing] = useState(false);
   const { t, formatCurrency, formatDate } = useI18n();
 
   const generatePdf = async () => {
     if (!payslip) return null;
 
     try {
-        // 1. Robust Library Check
+        // 1. Pemeriksaan library yang lebih ketat dengan log diagnostik.
         if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            console.error("PDF Generation Error: Pustaka inti jsPDF (window.jspdf) tidak tersedia.");
             throw new Error(t('jsPDFNotLoadedError'));
         }
         
@@ -31,6 +31,10 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         const doc = new jsPDF('p', 'mm', 'a4');
 
         if (typeof (doc as any).autoTable !== 'function') {
+            console.error("PDF Generation Error: Plugin autoTable tidak terpasang pada instance jsPDF.");
+            // Log diagnostik untuk membantu debugging jika masalah berlanjut.
+            console.log("Properti yang tersedia di jsPDF.API:", Object.keys(jsPDF.API));
+            console.log("Objek window.jspdf:", window.jspdf);
             throw new Error(t('autoTableNotLoadedError'));
         }
 
@@ -86,7 +90,9 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         const tableHead = [[t('date'), t('tasks'), t('groupTotal'), t('presentCrew'), t('yourEarning')]];
         const tableBody = payslip.logs.map(log => [
             formatDate(log.date),
-            log.taskName,
+            // **PERBAIKAN KUNCI**: Memastikan daftar tugas yang panjang tidak terpotong dalam PDF
+            // dengan memisahkannya ke beberapa baris di dalam sel yang sama.
+            log.taskName.split(', ').join('\n'),
             formatCurrency(log.totalDailyGross),
             log.workersPresent.toString(),
             formatCurrency(log.yourEarning)
@@ -114,17 +120,30 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             margin: { left: margin, right: margin }
         });
         
+        // Get the Y position after the table has been drawn. This is CRITICAL.
         cursorY = (doc as any).autoTable.previous.finalY;
 
+        // --- DYNAMIC SUMMARY & FOOTER SECTION ---
+        const summaryLineHeight = 8;
+        const footerHeight = 30;
+        const sectionPadding = 10;
+        const spaceNeeded = (sectionPadding * 2) + (summaryLineHeight * 3) + footerHeight;
+
+        // Check if there's enough space on the current page for the summary and footer.
+        if (cursorY + spaceNeeded > pageHeight - margin) {
+            doc.addPage();
+            cursorY = margin; // Reset cursor to the top of the new page.
+        }
+
         // --- SUMMARY ---
-        cursorY += 10;
+        cursorY += sectionPadding; // Add some top margin before the summary.
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(51, 65, 85);
         doc.text(t('grossSalary'), margin, cursorY);
         doc.text(formatCurrency(payslip.grossSalary), pageWidth - margin, cursorY, { align: 'right' });
 
-        cursorY += 8;
+        cursorY += summaryLineHeight;
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 116, 139);
         doc.text(t('allowancesBonus'), margin, cursorY);
@@ -132,7 +151,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         doc.setTextColor(22, 163, 74); // green-600
         doc.text(`+ ${formatCurrency(payslip.allowance)}`, pageWidth - margin, cursorY, { align: 'right' });
         
-        cursorY += 8;
+        cursorY += summaryLineHeight;
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 116, 139);
         doc.text(t('deductions'), margin, cursorY);
@@ -141,19 +160,18 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         doc.text(`- ${formatCurrency(payslip.deduction)}`, pageWidth - margin, cursorY, { align: 'right' });
 
         // --- NET SALARY FOOTER ---
-        const footerHeight = 30;
-        const footerY = pageHeight - footerHeight - 10;
+        cursorY += sectionPadding; // Add space before the footer block.
         doc.setFillColor(49, 46, 229); // Indigo-700
-        doc.rect(margin, footerY, pageWidth - (margin * 2), footerHeight, 'F');
+        doc.rect(margin, cursorY, pageWidth - (margin * 2), footerHeight, 'F');
         
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(224, 231, 255); // indigo-200
-        doc.text(t('netSalary').toUpperCase(), pageWidth - margin - 5, footerY + 10, { align: 'right' });
+        doc.text(t('netSalary').toUpperCase(), pageWidth - margin - 5, cursorY + 10, { align: 'right' });
         
         doc.setFontSize(26);
         doc.setTextColor(255, 255, 255);
-        doc.text(formatCurrency(payslip.netSalary), pageWidth - margin - 5, footerY + 22, { align: 'right' });
+        doc.text(formatCurrency(payslip.netSalary), pageWidth - margin - 5, cursorY + 22, { align: 'right' });
 
         return doc;
 
@@ -172,47 +190,42 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     }
   };
 
-  const handleShare = async () => {
+  const handleShareToWhatsApp = () => {
     if (!payslip) return;
-    if (!navigator.share) {
-        alert(t('shareNotSupported'));
-        return;
-    }
 
-    setIsSharing(true);
-    try {
-        const doc = await generatePdf();
-        if (!doc) {
-            // Error alert is handled inside generatePdf, so we just stop execution here.
-            return;
-        }
+    const nl = '\n'; // Gunakan karakter newline asli, encodeURIComponent akan menanganinya.
 
-        const pdfBlob = doc.output('blob');
-        const file = new File([pdfBlob], `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`, { type: 'application/pdf' });
+    let text = `*${t('payslip')}*${nl}${nl}`;
+    text += `*${t('employeeName')}:* ${payslip.employeeName}${nl}`;
+    text += `*${t('period')}:* ${payslip.period}${nl}`;
+    
+    // **PERBAIKAN KUNCI**: Rombak total bagian rincian harian agar sama lengkapnya dengan versi cetak.
+    text += `${nl}--- *${t('dailyPieceRateEarnings')}* ---${nl}`;
+    
+    payslip.logs.forEach(log => {
+        text += `${nl}*🗓️ ${formatDate(log.date)}*${nl}`;
         
-        const shareData = {
-            files: [file],
-            title: `Payslip for ${payslip.employeeName}`,
-            text: `Here is the payslip for ${payslip.employeeName} for the period ${payslip.period}.`,
-        };
+        // Buat daftar tugas baris per baris untuk kejelasan maksimal.
+        if (log.taskName && log.taskName !== '-') {
+            const tasks = log.taskName.split(', ').map(task => `  • _${task.trim()}_`).join(nl);
+            text += `${tasks}${nl}`;
+        }
         
-        // Check if the browser can share the file before attempting to share
-        if (navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-        } else {
-             // Fallback for browsers that support navigator.share but not file sharing
-            alert("This browser doesn't support file sharing. You can download the PDF instead.");
-            handleDownloadPDF();
-        }
-    } catch (error) {
-        console.error('Error sharing:', error);
-        // The user cancelling the share dialog is not an error we need to report.
-        if ((error as Error).name !== 'AbortError') {
-          alert(t('shareError'));
-        }
-    } finally {
-        setIsSharing(false);
-    }
+        text += `  *${t('yourEarning')}:* *${formatCurrency(log.yourEarning)}*${nl}`;
+    });
+
+    text += `${nl}---${nl}`;
+
+    // Tambahkan bagian ringkasan
+    text += `${nl}*${t('grossSalary')}:* ${formatCurrency(payslip.grossSalary)}${nl}`;
+    text += `*${t('allowancesBonus')}:* + ${formatCurrency(payslip.allowance)}${nl}`;
+    text += `*${t('deductions')}:* - ${formatCurrency(payslip.deduction)}${nl}`;
+    text += `--------------------${nl}`;
+    text += `*${t('netSalary')}:* *${formatCurrency(payslip.netSalary)}*${nl}${nl}`;
+    text += `_${t('generatedWith', { appName: t('appName') })}_`;
+    
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
   
   const handlePrint = () => {
@@ -368,12 +381,11 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
       </div>
       <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 no-print">
         <button
-          onClick={handleShare}
-          disabled={isSharing}
-          className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all flex items-center justify-center disabled:bg-slate-400 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          onClick={handleShareToWhatsApp}
+          className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
-          <ShareIcon />
-          {isSharing ? t('sharing') : t('share')}
+          <WhatsAppIcon />
+          {t('shareToWhatsApp')}
         </button>
         <button
           onClick={handlePrint}
