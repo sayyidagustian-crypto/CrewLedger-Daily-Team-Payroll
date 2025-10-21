@@ -1,7 +1,26 @@
-
 import type { Employee, DailyGroupLog, Payslip, PayslipLogEntry } from '../types';
 
 class PayslipService {
+    /**
+     * Recalculates earnings for a daily log to ensure customTasks are included.
+     * This is crucial for handling data saved before the freelance/customTasks feature was added.
+     * It returns a new log object, leaving the original untouched.
+     */
+    private _recalculateLog(log: DailyGroupLog): DailyGroupLog {
+        const standardTasksTotal = log.tasks.reduce((sum, task) => sum + task.subTotal, 0);
+        const customTasksTotal = (log.customTasks || []).reduce((sum, task) => sum + task.totalEarning, 0);
+        
+        const totalGrossEarnings = standardTasksTotal + customTasksTotal;
+        const individualEarnings = log.presentEmployeeIds.length > 0 ? totalGrossEarnings / log.presentEmployeeIds.length : 0;
+        
+        // Return a new object to avoid mutating the state directly
+        return {
+            ...log,
+            totalGrossEarnings,
+            individualEarnings,
+        };
+    }
+
     /**
      * Generates a payslip for a single employee for a given period.
      */
@@ -17,10 +36,13 @@ class PayslipService {
         const periodYear = year;
         const displayPeriod = new Date(periodYYYYMM + '-02').toLocaleString('default', { month: 'long', year: 'numeric' });
 
-        const relevantLogs = dailyLogs.filter(log => {
-            const logDate = new Date(log.date);
-            return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
-        });
+        const relevantLogs = dailyLogs
+            .filter(log => {
+                const logDate = new Date(log.date);
+                return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
+            })
+            // IMPORTANT: Recalculate each log to fix old data structures.
+            .map(log => this._recalculateLog(log));
 
         const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
             const standardTaskNames = dayLog.tasks.map(t => t.taskName);
@@ -30,12 +52,14 @@ class PayslipService {
             return {
                 date: dayLog.date,
                 taskName: allTaskNames.join(', ') || '-',
+                // Use the recalculated values
                 totalDailyGross: dayLog.totalGrossEarnings,
                 workersPresent: dayLog.presentEmployeeIds.length,
                 yourEarning: dayLog.individualEarnings
             };
         });
         
+        // Use the recalculated individualEarnings for the sum
         const grossSalary = relevantLogs.reduce((total, log) => total + log.individualEarnings, 0);
         const netSalary = grossSalary + allowance - deduction;
 
@@ -71,11 +95,15 @@ class PayslipService {
         const periodYear = new Date(periodYYYYMM + '-02').getUTCFullYear();
     
         activeEmployees.forEach(employee => {
-            const relevantLogs = dailyLogs.filter(log => {
-                const logDate = new Date(log.date);
-                return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
-            });
+            const relevantLogs = dailyLogs
+                .filter(log => {
+                    const logDate = new Date(log.date);
+                    return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
+                })
+                // IMPORTANT: Recalculate each log to fix old data structures.
+                .map(log => this._recalculateLog(log));
     
+            // Use the recalculated individualEarnings for the sum
             const grossSalary = relevantLogs.reduce((total, log) => total + log.individualEarnings, 0);
     
             if (grossSalary > 0) {
@@ -87,6 +115,7 @@ class PayslipService {
                     return {
                         date: dayLog.date,
                         taskName: allTaskNames.join(', ') || '-',
+                        // Use the recalculated values
                         totalDailyGross: dayLog.totalGrossEarnings,
                         workersPresent: dayLog.presentEmployeeIds.length,
                         yourEarning: dayLog.individualEarnings
