@@ -187,6 +187,9 @@ const translations = {
     shareError: 'An error occurred while trying to share.',
     downloadPDF: 'Download PDF',
     print: 'Print',
+    jsPDFNotLoadedError: 'jsPDF library failed to load.',
+    autoTableNotLoadedError: 'jsPDF-AutoTable plugin failed to load.',
+    pdfGenerationFailedError: 'Could not generate PDF. Please try again. If the problem persists, try reloading the page.',
   },
   id: {
     // General
@@ -372,6 +375,9 @@ const translations = {
     shareError: 'Terjadi kesalahan saat mencoba berbagi.',
     downloadPDF: 'Unduh PDF',
     print: 'Cetak',
+    jsPDFNotLoadedError: 'Pustaka jsPDF gagal dimuat.',
+    autoTableNotLoadedError: 'Plugin jsPDF-AutoTable gagal dimuat.',
+    pdfGenerationFailedError: 'Tidak dapat membuat PDF. Silakan coba lagi. Jika masalah berlanjut, coba muat ulang halaman.',
   },
 };
 

@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'gaji-borongan-v9'; // Versi dinaikkan untuk memicu pembaruan dan membersihkan cache lama
+const CACHE_NAME = 'gaji-borongan-v10'; // Versi dinaikkan untuk memicu pembaruan dan membersihkan cache lama
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -9,7 +9,7 @@ const APP_SHELL_URLS = [
   // Dependensi penting dari CDN agar tersedia offline
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.umd.min.js',
   'https://aistudiocdn.com/react@^19.2.0',
   'https://aistudiocdn.com/react-dom@^19.2.0/client'
 ];
