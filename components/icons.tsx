@@ -134,3 +134,9 @@ export const InformationCircleIcon = ({ className = "h-5 w-5" }: { className?: s
         <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
+
+export const PrintIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M5 4v2h10V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm10 4H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2zm-4 4a1 1 0 100 2h-2a1 1 0 100-2h2z" clipRule="evenodd" />
+    </svg>
+);

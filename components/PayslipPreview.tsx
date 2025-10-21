@@ -1,7 +1,7 @@
 
 import React, { useRef, useState } from 'react';
 import type { Payslip } from '../types';
-import { DownloadIcon, ShareIcon, UserCircleIcon } from './icons';
+import { DownloadIcon, ShareIcon, UserCircleIcon, PrintIcon } from './icons';
 import { useI18n } from '../i18n';
 
 // Global window object might not have these properties, so we declare them.
@@ -17,62 +17,188 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const [isSharing, setIsSharing] = useState(false);
   const { t, formatCurrency, formatDate } = useI18n();
 
-  const handleExportPDF = () => {
-    if (!payslipRef.current || !payslip) return;
-    
-    const { jsPDF } = window.jspdf;
-    const html2canvas = window.html2canvas;
+  /**
+   * Generates a jsPDF document object for the current payslip.
+   * This function uses jspdf-autotable to create a clean, multi-page-aware PDF.
+   */
+  const generatePdfDocument = () => {
+    if (!payslip) return null;
 
-    html2canvas(payslipRef.current, { scale: 3, backgroundColor: '#ffffff' }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+
+    // --- Header ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text(t('payslip'), margin, 20);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`${t('period')}: ${payslip.period}`, margin, 28);
+
+    doc.setDrawColor(180, 180, 180);
+    doc.line(margin, 32, pageWidth - margin, 32);
+
+    // --- Employee Details ---
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(50);
+    doc.text(t('employeeDetails'), margin, 40);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(t('employeeName'), margin, 48);
+    doc.text(payslip.employeeName, pageWidth / 2, 48, { align: 'left' });
+
+    doc.text(t('position'), margin, 54);
+    doc.text(payslip.employeePosition || '-', pageWidth / 2, 54, { align: 'left' });
+    
+    // --- Earnings Table ---
+    const tableColumn = [t('date'), t('tasks'), t('groupTotal'), t('presentCrew'), t('yourEarning')];
+    const tableRows = payslip.logs.map(log => [
+        formatDate(log.date),
+        log.taskName,
+        formatCurrency(log.totalDailyGross),
+        log.workersPresent.toString(),
+        formatCurrency(log.yourEarning)
+    ]);
+    
+    (doc as any).autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 64,
+        headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+        styles: { cellPadding: 2, fontSize: 9, valign: 'middle', halign: 'left' },
+        columnStyles: {
+            2: { halign: 'right' },
+            3: { halign: 'center' },
+            4: { halign: 'right' }
+        },
+        margin: { left: margin, right: margin }
     });
+    
+    // --- Summary Section ---
+    const finalY = (doc as any).autoTable.previous.finalY;
+    let currentY = finalY + 10;
+    
+    if (currentY > 260) { // Check if there's enough space, if not, add a new page
+        doc.addPage();
+        currentY = 20;
+    }
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.line(margin, currentY - 2, pageWidth - margin, currentY - 2);
+    
+    doc.text(t('grossSalary'), margin, currentY + 5);
+    doc.text(formatCurrency(payslip.grossSalary), pageWidth - margin, currentY + 5, { align: 'right' });
+
+    currentY += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+
+    doc.text(t('allowancesBonus'), margin, currentY + 5);
+    doc.text(`+ ${formatCurrency(payslip.allowance)}`, pageWidth - margin, currentY + 5, { align: 'right' });
+
+    currentY += 7;
+    doc.text(t('deductions'), margin, currentY + 5);
+    doc.text(`- ${formatCurrency(payslip.deduction)}`, pageWidth - margin, currentY + 5, { align: 'right' });
+    
+    // --- Net Salary Footer ---
+    currentY += 15;
+    doc.setFillColor(79, 70, 229); // indigo-600
+    doc.rect(margin, currentY - 5, pageWidth - (margin * 2), 20, 'F');
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(t('netSalary').toUpperCase(), pageWidth - margin - 5, currentY + 2, { align: 'right' });
+    
+    doc.setFontSize(18);
+    doc.text(formatCurrency(payslip.netSalary), pageWidth - margin - 5, currentY + 10, { align: 'right' });
+
+    return doc;
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = generatePdfDocument();
+    if (doc && payslip) {
+        doc.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
+    }
   };
 
   const handleShare = async () => {
-    if (!payslipRef.current || !payslip) return;
+    if (!payslip) return;
     if (!navigator.share) {
         alert(t('shareNotSupported'));
         return;
     }
 
     setIsSharing(true);
-
     try {
-        const canvas = await window.html2canvas(payslipRef.current, { scale: 3, backgroundColor: '#ffffff' });
-        canvas.toBlob(async (blob) => {
-            if (blob) {
-                const file = new File([blob], `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.png`, { type: 'image/png' });
-                const shareData = {
-                    files: [file],
-                    title: `Payslip for ${payslip.employeeName}`,
-                    text: `Here is the payslip for ${payslip.employeeName} for the period ${payslip.period}.`,
-                };
-                if (navigator.canShare && navigator.canShare(shareData)) {
-                    await navigator.share(shareData);
-                } else {
-                    // Fallback for browsers that don't support file sharing
-                    await navigator.share({
-                        title: shareData.title,
-                        text: shareData.text,
-                    });
-                }
-            }
-             setIsSharing(false);
-        }, 'image/png');
+        const doc = generatePdfDocument();
+        if (!doc) throw new Error("PDF generation failed.");
+
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`, { type: 'application/pdf' });
+        
+        const shareData = {
+            files: [file],
+            title: `Payslip for ${payslip.employeeName}`,
+            text: `Here is the payslip for ${payslip.employeeName} for the period ${payslip.period}.`,
+        };
+        if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            alert("This browser doesn't support file sharing.");
+        }
     } catch (error) {
         console.error('Error sharing:', error);
         if ((error as Error).name !== 'AbortError') {
           alert(t('shareError'));
         }
+    } finally {
         setIsSharing(false);
     }
   };
+  
+  const handlePrint = () => {
+    if (!payslipRef.current) return;
 
+    const printContent = payslipRef.current.innerHTML;
+    const printWindow = window.open('', '_blank', 'height=800,width=800');
+    
+    if (printWindow) {
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Payslip</title>
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <style>
+                        @media print {
+                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            @page { size: A4; margin: 20mm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printContent}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { // Timeout ensures content is loaded before print dialog opens
+             printWindow.print();
+             printWindow.close();
+        }, 250);
+    }
+  };
 
   if (!payslip) {
     return (
@@ -159,7 +285,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             <p className="text-4xl font-bold font-mono">{formatCurrency(payslip.netSalary)}</p>
         </footer>
       </div>
-      <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-2 gap-3">
+      <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           onClick={handleShare}
           disabled={isSharing}
@@ -169,11 +295,18 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
           {isSharing ? t('sharing') : t('share')}
         </button>
         <button
-          onClick={handleExportPDF}
+          onClick={handlePrint}
+          className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
+        >
+          <PrintIcon />
+          {t('print')}
+        </button>
+        <button
+          onClick={handleDownloadPDF}
           className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
           <DownloadIcon />
-          {t('exportToPDF')}
+          {t('downloadPDF')}
         </button>
       </div>
     </div>
