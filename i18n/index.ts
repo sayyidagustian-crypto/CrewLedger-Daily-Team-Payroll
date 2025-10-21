@@ -190,11 +190,8 @@ const translations = {
     shareToWhatsApp: 'Share (WhatsApp)',
     downloadPDF: 'Download PDF',
     print: 'Print',
-    jsPDFNotLoadedError: 'jsPDF library failed to load.',
-    autoTableNotLoadedError: 'jsPDF-AutoTable plugin failed to load.',
     pdfGenerationFailedError: 'Could not generate PDF. Please try again. If the problem persists, try reloading the page.',
     generatedWith: 'Generated with {{appName}}',
-    loadingLibraries: 'Loading Libraries...',
   },
   id: {
     // General
@@ -383,11 +380,8 @@ const translations = {
     shareToWhatsApp: 'Bagikan (WhatsApp)',
     downloadPDF: 'Unduh PDF',
     print: 'Cetak',
-    jsPDFNotLoadedError: 'Pustaka jsPDF gagal dimuat.',
-    autoTableNotLoadedError: 'Plugin jsPDF-AutoTable gagal dimuat.',
     pdfGenerationFailedError: 'Tidak dapat membuat PDF. Silakan coba lagi. Jika masalah berlanjut, coba muat ulang halaman.',
     generatedWith: 'Dibuat dengan {{appName}}',
-    loadingLibraries: 'Memuat Pustaka...',
   },
 };
 

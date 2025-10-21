@@ -1,15 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } from 'docx';
+import saveAs from 'file-saver';
 import type { Payslip } from '../types';
 import { DownloadIcon, UserCircleIcon, PrintIcon, WhatsAppIcon, DocumentTextIcon } from './icons';
 import { useI18n } from '../i18n';
-
-// Global window object might not have these properties, so we declare them.
-declare global {
-    interface Window {
-        jspdf: any;
-        docx: any;
-    }
-}
 
 export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip }) => {
   const payslipRef = useRef<HTMLDivElement>(null);
@@ -34,12 +30,6 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     if (!payslip) return null;
 
     try {
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || typeof (new window.jspdf.jsPDF()).autoTable !== 'function') {
-            console.error("PDF Generation Error: Pustaka jsPDF atau plugin autoTable tidak tersedia.");
-            throw new Error(t('jsPDFNotLoadedError'));
-        }
-        
-        const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
 
         const pageHeight = doc.internal.pageSize.getHeight();
@@ -89,7 +79,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             formatCurrency(log.yourEarning)
         ]);
 
-        (doc as any).autoTable({
+        autoTable(doc, {
             startY: cursorY,
             head: tableHead,
             body: tableBody,
@@ -165,11 +155,6 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
       if (!payslip) return null;
 
       try {
-        if (typeof window.docx === 'undefined') {
-            throw new Error("Pustaka DOCX (window.docx) tidak tersedia.");
-        }
-        const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = window.docx;
-
         const doc = new Document({
             sections: [{
                 children: [
@@ -234,14 +219,15 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const handleDownloadPdf = async () => {
     setIsGenerating(true);
     setDownloadMenuOpen(false);
+    
     try {
         const doc = await generatePdf();
         if (doc && payslip) {
             doc.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
         }
     } catch (error) {
+        // Error is already handled in generatePdf, this is just to stop the spinner
         console.error("PDF generation failed:", error);
-        // Alert is already shown in generatePdf, but we catch to stop spinner
     } finally {
         setIsGenerating(false);
     }
@@ -250,28 +236,15 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const handleDownloadDocx = async () => {
     setIsGenerating(true);
     setDownloadMenuOpen(false);
+    
     try {
         const blob = await generateDocx();
         if (blob && payslip) {
-            // Using FileSaver.js logic, which is more robust
-            const saver = (window as any).saveAs;
-            if (saver) {
-                 saver(blob, `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`);
-            } else {
-                // Fallback for browsers that don't have it
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
+            saveAs(blob, `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`);
         }
     } catch (error) {
+        // Error is already handled in generateDocx
         console.error("DOCX generation failed:", error);
-        // Alert is already shown in generateDocx
     } finally {
         setIsGenerating(false);
     }
@@ -404,7 +377,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
                 ) : (
                     <DownloadIcon />
                 )}
-                {isGenerating ? t('loadingLibraries') : "Unduh"}
+                {isGenerating ? t('generating') : "Unduh"}
             </button>
             {isDownloadMenuOpen && !isGenerating && (
                 <div className="origin-top-right absolute right-0 bottom-full mb-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 animate-fade-in-up">

@@ -1,15 +1,11 @@
 
-const CACHE_NAME = 'gaji-borongan-v15'; // Version increased for offline library caching
+const CACHE_NAME = 'gaji-borongan-v16'; // Version increased to reflect changes
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/index.tsx',
   '/icon.svg',
   '/manifest.json',
-  // Local libraries for offline functionality
-  '/libs/jspdf.umd.min.js',
-  '/libs/jspdf-autotable.umd.min.js',
-  '/libs/docx.min.js',
   // Essential CDN dependencies that are not part of the core offline feature
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
