@@ -53,7 +53,9 @@ export interface Payslip {
   logs: PayslipLogEntry[];
   grossSalary: number;
   allowance: number;
+  allowanceDescription?: string;
   deduction: number;
+  deductionDescription?: string;
   netSalary: number;
   createdAt: string;
 }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 
 // 1. Define Translation Data
@@ -97,6 +96,8 @@ const translations = {
     periodMonth: 'Period (Month)',
     allowanceBonus: 'Allowance / Bonus',
     deductions: 'Deductions',
+    allowanceDescriptionPlaceholder: 'Allowance description (optional)',
+    deductionDescriptionPlaceholder: 'Deduction description (optional)',
     payslipSavedSuccess: 'Payslip for {{employeeName}} for period {{period}} has been saved successfully.',
     includePreviousMonthEarnings: "Include previous month's earnings",
     selectDaysToInclude: "Select days from the previous month to include:",
@@ -290,6 +291,8 @@ const translations = {
     periodMonth: 'Periode (Bulan)',
     allowanceBonus: 'Tunjangan / Bonus',
     deductions: 'Potongan',
+    allowanceDescriptionPlaceholder: 'Keterangan tunjangan (opsional)',
+    deductionDescriptionPlaceholder: 'Keterangan potongan (opsional)',
     payslipSavedSuccess: 'Slip gaji untuk {{employeeName}} periode {{period}} berhasil disimpan.',
     includePreviousMonthEarnings: "Sertakan pendapatan bulan sebelumnya",
     selectDaysToInclude: "Pilih tanggal dari bulan sebelumnya untuk disertakan:",

@@ -1,4 +1,3 @@
-
 import type { Employee, DailyGroupLog, Payslip, PayslipLogEntry } from '../types';
 
 class PayslipService {
@@ -31,7 +30,9 @@ class PayslipService {
         dailyLogs: DailyGroupLog[],
         allowance: number,
         deduction: number,
-        previousLogIds: string[] = []
+        previousLogIds: string[] = [],
+        allowanceDescription?: string,
+        deductionDescription?: string
     ): Payslip {
         const [year, month] = periodYYYYMM.split('-').map(Number);
         const periodMonth = month - 1;
@@ -81,7 +82,9 @@ class PayslipService {
             logs: payslipLogs,
             grossSalary,
             allowance,
+            allowanceDescription,
             deduction,
+            deductionDescription,
             netSalary,
             createdAt: new Date().toISOString(),
         };

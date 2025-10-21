@@ -114,14 +114,16 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
 
         cursorY += summaryLineHeight;
         doc.setFont('helvetica', 'normal');
-        doc.text(t('allowancesBonus'), margin, cursorY);
+        const allowanceLabel = payslip.allowanceDescription ? `${t('allowancesBonus')} (${payslip.allowanceDescription})` : t('allowancesBonus');
+        doc.text(allowanceLabel, margin, cursorY);
         doc.setTextColor(22, 163, 74); // green-600
         doc.text(`+ ${formatCurrency(payslip.allowance)}`, pageWidth - margin, cursorY, { align: 'right' });
         
         cursorY += summaryLineHeight;
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(51, 65, 85);
-        doc.text(t('deductions'), margin, cursorY);
+        const deductionLabel = payslip.deductionDescription ? `${t('deductions')} (${payslip.deductionDescription})` : t('deductions');
+        doc.text(deductionLabel, margin, cursorY);
         doc.setTextColor(220, 38, 38); // red-600
         doc.text(`- ${formatCurrency(payslip.deduction)}`, pageWidth - margin, cursorY, { align: 'right' });
 
@@ -155,6 +157,9 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
       if (!payslip) return null;
 
       try {
+        const allowanceLabel = payslip.allowanceDescription ? `${t('allowancesBonus')} (${payslip.allowanceDescription})` : t('allowancesBonus');
+        const deductionLabel = payslip.deductionDescription ? `${t('deductions')} (${payslip.deductionDescription})` : t('deductions');
+
         const doc = new Document({
             sections: [{
                 children: [
@@ -199,8 +204,8 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
                         borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE }, insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE } },
                         rows: [
                            new TableRow({ children: [ new TableCell({ children: [new Paragraph({ text: t('grossSalary'), style: "strong" })] }), new TableCell({ children: [new Paragraph({ text: formatCurrency(payslip.grossSalary), alignment: AlignmentType.RIGHT, style: "strong" })] }) ] }),
-                           new TableRow({ children: [ new TableCell({ children: [new Paragraph(t('allowancesBonus'))] }), new TableCell({ children: [new Paragraph({ text: `+ ${formatCurrency(payslip.allowance)}`, alignment: AlignmentType.RIGHT })] }) ] }),
-                           new TableRow({ children: [ new TableCell({ children: [new Paragraph(t('deductions'))] }), new TableCell({ children: [new Paragraph({ text: `- ${formatCurrency(payslip.deduction)}`, alignment: AlignmentType.RIGHT })] }) ] }),
+                           new TableRow({ children: [ new TableCell({ children: [new Paragraph(allowanceLabel)] }), new TableCell({ children: [new Paragraph({ text: `+ ${formatCurrency(payslip.allowance)}`, alignment: AlignmentType.RIGHT })] }) ] }),
+                           new TableRow({ children: [ new TableCell({ children: [new Paragraph(deductionLabel)] }), new TableCell({ children: [new Paragraph({ text: `- ${formatCurrency(payslip.deduction)}`, alignment: AlignmentType.RIGHT })] }) ] }),
                            new TableRow({ children: [ new TableCell({ children: [new Paragraph({ text: t('netSalary').toUpperCase(), style: "strong" })] }), new TableCell({ children: [new Paragraph({ text: formatCurrency(payslip.netSalary), alignment: AlignmentType.RIGHT, style: "strong" })] }) ] }),
                         ]
                     }),
@@ -267,8 +272,10 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
     });
     text += `${nl}---${nl}`;
     text += `${nl}*${t('grossSalary')}:* ${formatCurrency(payslip.grossSalary)}${nl}`;
-    text += `*${t('allowancesBonus')}:* + ${formatCurrency(payslip.allowance)}${nl}`;
-    text += `*${t('deductions')}:* - ${formatCurrency(payslip.deduction)}${nl}`;
+    const allowanceText = payslip.allowanceDescription ? `${t('allowancesBonus')} (${payslip.allowanceDescription})` : t('allowancesBonus');
+    text += `*${allowanceText}:* + ${formatCurrency(payslip.allowance)}${nl}`;
+    const deductionText = payslip.deductionDescription ? `${t('deductions')} (${payslip.deductionDescription})` : t('deductions');
+    text += `*${deductionText}:* - ${formatCurrency(payslip.deduction)}${nl}`;
     text += `--------------------${nl}`;
     text += `*${t('netSalary')}:* *${formatCurrency(payslip.netSalary)}*${nl}${nl}`;
     text += `_${t('generatedWith', { appName: t('appName') })}_`;
@@ -347,8 +354,20 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         </section>
         <section className="mt-8 space-y-2">
             <div className="flex justify-between items-center border-t pt-4"> <span className="text-slate-600 text-lg font-semibold">{t('grossSalary')}</span> <span className="text-slate-800 text-lg font-semibold font-mono">{formatCurrency(payslip.grossSalary)}</span> </div>
-            <div className="flex justify-between items-center"> <span className="text-slate-600">{t('allowancesBonus')}</span> <span className="text-green-600 font-mono">+ {formatCurrency(payslip.allowance)}</span> </div>
-            <div className="flex justify-between items-center"> <span className="text-slate-600">{t('deductions')}</span> <span className="text-red-600 font-mono">- {formatCurrency(payslip.deduction)}</span> </div>
+            <div className="flex justify-between items-center">
+                <div>
+                    <span className="text-slate-600">{t('allowancesBonus')}</span>
+                    {payslip.allowanceDescription && <span className="text-slate-500 text-sm ml-2 italic">({payslip.allowanceDescription})</span>}
+                </div>
+                <span className="text-green-600 font-mono">+ {formatCurrency(payslip.allowance)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+                <div>
+                    <span className="text-slate-600">{t('deductions')}</span>
+                    {payslip.deductionDescription && <span className="text-slate-500 text-sm ml-2 italic">({payslip.deductionDescription})</span>}
+                </div>
+                <span className="text-red-600 font-mono">- {formatCurrency(payslip.deduction)}</span>
+            </div>
         </section>
         <footer className="bg-indigo-700 text-white p-6 rounded-lg mt-6 text-right shadow-inner">
             <div className="flex justify-between items-center">

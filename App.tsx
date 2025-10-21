@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings, CustomTask } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
@@ -67,11 +66,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         setShowGuestBanner(false);
     };
 
-    const handleGeneratePayslip = useCallback((employeeId: string, period: string, allowance: number, deduction: number, previousLogIds?: string[]) => {
+    const handleGeneratePayslip = useCallback((employeeId: string, period: string, allowance: number, deduction: number, previousLogIds?: string[], allowanceDescription?: string, deductionDescription?: string) => {
         const employee = employees.find(e => e.id === employeeId);
         if (!employee) return null;
 
-        const newPayslip = payslipService.generatePayslip(employee, period, dailyLogs, allowance, deduction, previousLogIds);
+        const newPayslip = payslipService.generatePayslip(employee, period, dailyLogs, allowance, deduction, previousLogIds, allowanceDescription, deductionDescription);
         
         if (isMobileView) {
             openModal('viewPayslip', newPayslip);
@@ -500,7 +499,10 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                             <input type="date" id="logDate" value={logDate} onChange={e => setLogDate(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900" />
                         </div>
                         <div>
-                             <label className="block text-sm font-medium text-slate-700 mb-1">{t('selectPresentEmployees')}</label>
+                             <label className="block text-sm font-medium text-slate-700 mb-1">
+                                {t('selectPresentEmployees')}
+                                <span className="ml-2 font-normal text-slate-500">({presentEmployeeIds.length} / {activeEmployees.length})</span>
+                             </label>
                             <div className="mt-2 border border-slate-300 rounded-md max-h-48 overflow-y-auto">
                                 {activeEmployees.map(emp => (
                                     <div key={emp.id} className="flex items-center p-2 border-b last:border-0 hover:bg-slate-50">
@@ -599,6 +601,8 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         const [period, setPeriod] = useState(new Date().toISOString().substring(0, 7)); // YYYY-MM
         const [allowance, setAllowance] = useState('0');
         const [deduction, setDeduction] = useState('0');
+        const [allowanceDescription, setAllowanceDescription] = useState('');
+        const [deductionDescription, setDeductionDescription] = useState('');
         const [periodLogs, setPeriodLogs] = useState<PayslipLogEntry[]>([]);
         const [includePreviousMonth, setIncludePreviousMonth] = useState(false);
         const [selectedPreviousLogIds, setSelectedPreviousLogIds] = useState<string[]>([]);
@@ -679,7 +683,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                 return;
             }
             const prevLogsToInclude = includePreviousMonth ? selectedPreviousLogIds : [];
-            handleGeneratePayslip(employeeId, period, parseFloat(allowance) || 0, parseFloat(deduction) || 0, prevLogsToInclude);
+            handleGeneratePayslip(employeeId, period, parseFloat(allowance) || 0, parseFloat(deduction) || 0, prevLogsToInclude, allowanceDescription, deductionDescription);
         };
 
         const BulkGenerator = () => {
@@ -760,11 +764,17 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                         </div>
                         <div>
                              <label htmlFor="allowance" className="block text-sm font-medium text-slate-700">{t('allowanceBonus')}</label>
-                            <input type="number" id="allowance" value={allowance} onChange={e => setAllowance(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                             <div className="mt-1 grid grid-cols-3 gap-2">
+                                <input type="number" id="allowance" value={allowance} onChange={e => setAllowance(e.target.value)} className="col-span-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                                <input type="text" id="allowance_desc" value={allowanceDescription} onChange={e => setAllowanceDescription(e.target.value)} placeholder={t('allowanceDescriptionPlaceholder')} className="col-span-2 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                             </div>
                         </div>
                         <div>
                              <label htmlFor="deduction" className="block text-sm font-medium text-slate-700">{t('deductions')}</label>
-                            <input type="number" id="deduction" value={deduction} onChange={e => setDeduction(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                             <div className="mt-1 grid grid-cols-3 gap-2">
+                                <input type="number" id="deduction" value={deduction} onChange={e => setDeduction(e.target.value)} className="col-span-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                                <input type="text" id="deduction_desc" value={deductionDescription} onChange={e => setDeductionDescription(e.target.value)} placeholder={t('deductionDescriptionPlaceholder')} className="col-span-2 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
+                            </div>
                         </div>
                     </div>
                     
