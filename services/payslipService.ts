@@ -1,3 +1,4 @@
+
 import type { Employee, DailyGroupLog, Payslip, PayslipLogEntry } from '../types';
 
 class PayslipService {
@@ -29,18 +30,25 @@ class PayslipService {
         periodYYYYMM: string,
         dailyLogs: DailyGroupLog[],
         allowance: number,
-        deduction: number
+        deduction: number,
+        previousLogIds: string[] = []
     ): Payslip {
         const [year, month] = periodYYYYMM.split('-').map(Number);
         const periodMonth = month - 1;
         const periodYear = year;
         const displayPeriod = new Date(periodYYYYMM + '-02').toLocaleString('default', { month: 'long', year: 'numeric' });
 
-        const relevantLogs = dailyLogs
+        const currentPeriodLogs = dailyLogs
             .filter(log => {
                 const logDate = new Date(log.date);
                 return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
-            })
+            });
+        
+        const previousPeriodLogs = dailyLogs
+            .filter(log => previousLogIds.includes(log.id) && log.presentEmployeeIds.includes(employee.id));
+
+        const relevantLogs = [...previousPeriodLogs, ...currentPeriodLogs]
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
             // IMPORTANT: Recalculate each log to fix old data structures.
             .map(log => this._recalculateLog(log));
 

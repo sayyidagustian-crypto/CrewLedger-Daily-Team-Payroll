@@ -67,11 +67,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         setShowGuestBanner(false);
     };
 
-    const handleGeneratePayslip = useCallback((employeeId: string, period: string, allowance: number, deduction: number) => {
+    const handleGeneratePayslip = useCallback((employeeId: string, period: string, allowance: number, deduction: number, previousLogIds?: string[]) => {
         const employee = employees.find(e => e.id === employeeId);
         if (!employee) return null;
 
-        const newPayslip = payslipService.generatePayslip(employee, period, dailyLogs, allowance, deduction);
+        const newPayslip = payslipService.generatePayslip(employee, period, dailyLogs, allowance, deduction, previousLogIds);
         
         if (isMobileView) {
             openModal('viewPayslip', newPayslip);
@@ -600,6 +600,8 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         const [allowance, setAllowance] = useState('0');
         const [deduction, setDeduction] = useState('0');
         const [periodLogs, setPeriodLogs] = useState<PayslipLogEntry[]>([]);
+        const [includePreviousMonth, setIncludePreviousMonth] = useState(false);
+        const [selectedPreviousLogIds, setSelectedPreviousLogIds] = useState<string[]>([]);
 
         useEffect(() => {
             if (employeeId && period) {
@@ -633,12 +635,51 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             }
         }, [employeeId, period, dailyLogs, employees]);
 
+        const eligiblePreviousMonthLogs = useMemo(() => {
+            if (!employeeId || !period) return [];
+    
+            const [year, month] = period.split('-').map(Number);
+            const currentMonthDate = new Date(Date.UTC(year, month - 1, 1));
+            const previousMonthDate = new Date(currentMonthDate);
+            previousMonthDate.setUTCMonth(previousMonthDate.getUTCMonth() - 1);
+            
+            const prevMonth = previousMonthDate.getUTCMonth();
+            const prevYear = previousMonthDate.getUTCFullYear();
+    
+            // Only show logs from the last 10 days of the previous month for relevance
+            const startDate = new Date(Date.UTC(prevYear, prevMonth, 20));
+    
+            return dailyLogs.filter(log => {
+                const logDate = new Date(log.date + 'T00:00:00Z');
+                return (
+                    log.presentEmployeeIds.includes(employeeId) &&
+                    logDate.getUTCMonth() === prevMonth &&
+                    logDate.getUTCFullYear() === prevYear &&
+                    logDate >= startDate
+                );
+            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        }, [employeeId, period, dailyLogs]);
+    
+        const handlePreviousLogToggle = (logId: string) => {
+            setSelectedPreviousLogIds(prev =>
+                prev.includes(logId)
+                    ? prev.filter(id => id !== logId)
+                    : [...prev, logId]
+            );
+        };
+        
+        useEffect(() => {
+            setIncludePreviousMonth(false);
+            setSelectedPreviousLogIds([]);
+        }, [employeeId, period]);
+
         const handleSingleGenerate = () => {
             if (!employeeId || !period) {
                 alert(t('selectEmployee'));
                 return;
             }
-            handleGeneratePayslip(employeeId, period, parseFloat(allowance) || 0, parseFloat(deduction) || 0);
+            const prevLogsToInclude = includePreviousMonth ? selectedPreviousLogIds : [];
+            handleGeneratePayslip(employeeId, period, parseFloat(allowance) || 0, parseFloat(deduction) || 0, prevLogsToInclude);
         };
 
         const BulkGenerator = () => {
@@ -726,7 +767,51 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                             <input type="number" id="deduction" value={deduction} onChange={e => setDeduction(e.target.value)} className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900"/>
                         </div>
                     </div>
-                    <div className="mt-4">
+                    
+                    <div className="mt-6 border-t pt-4">
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="include-previous-month"
+                                checked={includePreviousMonth}
+                                onChange={(e) => setIncludePreviousMonth(e.target.checked)}
+                                className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                disabled={!employeeId}
+                            />
+                            <label htmlFor="include-previous-month" className={`ml-2 block text-sm font-medium ${!employeeId ? 'text-slate-400' : 'text-slate-700'}`}>
+                                {t('includePreviousMonthEarnings')}
+                            </label>
+                        </div>
+                        
+                        {includePreviousMonth && employeeId && (
+                            <div className="mt-4 pl-6 animate-fade-in">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">{t('selectDaysToInclude')}</label>
+                                <div className="border border-slate-300 rounded-md max-h-40 overflow-y-auto">
+                                    {eligiblePreviousMonthLogs.length > 0 ? (
+                                        eligiblePreviousMonthLogs.map(log => (
+                                            <div key={log.id} className="flex items-center p-2 border-b last:border-0 hover:bg-slate-50">
+                                                <input
+                                                    id={`prev-log-${log.id}`}
+                                                    type="checkbox"
+                                                    checked={selectedPreviousLogIds.includes(log.id)}
+                                                    onChange={() => handlePreviousLogToggle(log.id)}
+                                                    className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                                />
+                                                <label htmlFor={`prev-log-${log.id}`} className="ml-3 text-sm text-slate-700 cursor-pointer flex-grow flex justify-between">
+                                                    <span>{formatDate(log.date)}</span>
+                                                    <span className="font-mono font-semibold text-slate-600">{formatCurrency(log.individualEarnings)}</span>
+                                                </label>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="p-4 text-sm text-slate-500 text-center">{t('noPreviousLogsFound')}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-6">
                         <button onClick={handleSingleGenerate} className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                             <SparklesIcon className="h-5 w-5 mr-2" />
                             {t('generatePayslip')}
