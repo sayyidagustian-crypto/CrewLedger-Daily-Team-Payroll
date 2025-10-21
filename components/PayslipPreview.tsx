@@ -16,6 +16,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const downloadMenuRef = useRef<HTMLDivElement>(null);
   const { t, formatCurrency, formatDate } = useI18n();
   const [isDownloadMenuOpen, setDownloadMenuOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -231,26 +232,49 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   };
 
   const handleDownloadPdf = async () => {
-    const doc = await generatePdf();
-    if (doc && payslip) {
-        doc.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
-    }
+    setIsGenerating(true);
     setDownloadMenuOpen(false);
+    try {
+        const doc = await generatePdf();
+        if (doc && payslip) {
+            doc.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
+        }
+    } catch (error) {
+        console.error("PDF generation failed:", error);
+        // Alert is already shown in generatePdf, but we catch to stop spinner
+    } finally {
+        setIsGenerating(false);
+    }
   };
 
   const handleDownloadDocx = async () => {
-    const blob = await generateDocx();
-    if (blob && payslip) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+    setIsGenerating(true);
     setDownloadMenuOpen(false);
+    try {
+        const blob = await generateDocx();
+        if (blob && payslip) {
+            // Using FileSaver.js logic, which is more robust
+            const saver = (window as any).saveAs;
+            if (saver) {
+                 saver(blob, `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`);
+            } else {
+                // Fallback for browsers that don't have it
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+    } catch (error) {
+        console.error("DOCX generation failed:", error);
+        // Alert is already shown in generateDocx
+    } finally {
+        setIsGenerating(false);
+    }
   };
 
   const handleShareToWhatsApp = () => {
@@ -368,10 +392,21 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
           <PrintIcon /> {t('print')}
         </button>
         <div ref={downloadMenuRef} className="relative">
-            <button onClick={() => setDownloadMenuOpen(!isDownloadMenuOpen)} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-md hover:shadow-lg">
-                <DownloadIcon /> Unduh
+            <button 
+                onClick={() => setDownloadMenuOpen(!isDownloadMenuOpen)} 
+                disabled={isGenerating}
+                className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all flex items-center justify-center transform hover:scale-105 shadow-md hover:shadow-lg disabled:bg-blue-400 disabled:cursor-not-allowed">
+                {isGenerating ? (
+                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                ) : (
+                    <DownloadIcon />
+                )}
+                {isGenerating ? t('loadingLibraries') : "Unduh"}
             </button>
-            {isDownloadMenuOpen && (
+            {isDownloadMenuOpen && !isGenerating && (
                 <div className="origin-top-right absolute right-0 bottom-full mb-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 animate-fade-in-up">
                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                         <a href="#" onClick={(e) => { e.preventDefault(); handleDownloadPdf(); }} className="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900" role="menuitem">

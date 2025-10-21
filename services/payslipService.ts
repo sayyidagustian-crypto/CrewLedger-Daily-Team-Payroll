@@ -24,8 +24,7 @@ class PayslipService {
 
         const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
             const standardTaskNames = dayLog.tasks.map(t => t.taskName);
-            // FIX: Add a clear label to custom/freelance tasks for transparency on the payslip.
-            const customTaskNames = dayLog.customTasks?.map(t => `${t.name} (Pekerjaan Lepas)`) || [];
+            const customTaskNames = dayLog.customTasks?.map(t => t.name) || [];
             const allTaskNames = [...standardTaskNames, ...customTaskNames];
 
             return {
@@ -82,8 +81,7 @@ class PayslipService {
             if (grossSalary > 0) {
                  const payslipLogs: PayslipLogEntry[] = relevantLogs.map(dayLog => {
                     const standardTaskNames = dayLog.tasks.map(t => t.taskName);
-                    // FIX: Add a clear label to custom/freelance tasks for transparency on the payslip.
-                    const customTaskNames = dayLog.customTasks?.map(t => `${t.name} (Pekerjaan Lepas)`) || [];
+                    const customTaskNames = dayLog.customTasks?.map(t => t.name) || [];
                     const allTaskNames = [...standardTaskNames, ...customTaskNames];
                     
                     return {

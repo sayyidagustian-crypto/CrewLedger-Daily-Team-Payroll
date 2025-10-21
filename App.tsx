@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings, CustomTask } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
@@ -114,7 +115,7 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                  setDailyLogs(prev => prev.filter(l => l.id !== id));
                  break;
             case 'payslip':
-                setPayslips(prev => prev.filter(p => p.id === id));
+                setPayslips(prev => prev.filter(p => p.id !== id));
                 if (selectedPayslip?.id === id) setSelectedPayslip(null);
                 break;
         }
