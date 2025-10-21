@@ -17,116 +17,138 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const [isSharing, setIsSharing] = useState(false);
   const { t, formatCurrency, formatDate } = useI18n();
 
-  /**
-   * Generates a jsPDF document object for the current payslip.
-   * This function uses jspdf-autotable to create a clean, multi-page-aware PDF.
-   */
-  const generatePdfDocument = () => {
+  const generatePdfFromDOM = async () => {
     if (!payslip) return null;
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
-    
+    const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
+    let cursorY = 20;
 
-    // --- Header ---
+    // --- 1. HEADER ---
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.text(t('payslip'), margin, 20);
+    doc.setFontSize(32);
+    doc.setTextColor(49, 46, 229); // Indigo color
+    doc.text(t('payslip'), margin, cursorY);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`${t('period')}: ${payslip.period}`, margin, 28);
-
-    doc.setDrawColor(180, 180, 180);
-    doc.line(margin, 32, pageWidth - margin, 32);
-
-    // --- Employee Details ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(50);
-    doc.text(t('employeeDetails'), margin, 40);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text(t('employeeName'), margin, 48);
-    doc.text(payslip.employeeName, pageWidth / 2, 48, { align: 'left' });
-
-    doc.text(t('position'), margin, 54);
-    doc.text(payslip.employeePosition || '-', pageWidth / 2, 54, { align: 'left' });
+    doc.setTextColor(100, 116, 139); // Slate color
+    cursorY += 8;
+    doc.text(`${t('period')}: ${payslip.period}`, margin, cursorY);
     
-    // --- Earnings Table ---
-    const tableColumn = [t('date'), t('tasks'), t('groupTotal'), t('presentCrew'), t('yourEarning')];
-    const tableRows = payslip.logs.map(log => [
+    cursorY += 5;
+    doc.setDrawColor(49, 46, 229);
+    doc.setLineWidth(1);
+    doc.line(margin, cursorY, pageWidth - margin, cursorY);
+
+    // --- 2. EMPLOYEE DETAILS ---
+    cursorY += 15;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(t('employeeDetails').toUpperCase(), margin, cursorY);
+
+    cursorY += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(51, 65, 85);
+    doc.text(t('employeeName'), margin, cursorY);
+    doc.text(payslip.employeeName, pageWidth - margin, cursorY, { align: 'right' });
+
+    cursorY += 7;
+    doc.text(t('position'), margin, cursorY);
+    doc.text(payslip.employeePosition || '-', pageWidth - margin, cursorY, { align: 'right' });
+
+
+    // --- 3. EARNINGS TABLE ---
+    cursorY += 15;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(t('dailyPieceRateEarnings').toUpperCase(), margin, cursorY);
+    
+    cursorY += 5;
+    const tableHead = [[t('date'), t('tasks'), t('groupTotal'), t('presentCrew'), t('yourEarning')]];
+    const tableBody = payslip.logs.map(log => [
         formatDate(log.date),
         log.taskName,
         formatCurrency(log.totalDailyGross),
         log.workersPresent.toString(),
         formatCurrency(log.yourEarning)
     ]);
-    
-    (doc as any).autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 64,
-        headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
-        styles: { cellPadding: 2, fontSize: 9, valign: 'middle', halign: 'left' },
+
+    doc.autoTable({
+        startY: cursorY,
+        head: tableHead,
+        body: tableBody,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [241, 245, 249], // slate-100
+            textColor: [15, 23, 42], // slate-900
+            fontStyle: 'bold',
+        },
+        styles: {
+            fontSize: 9,
+            cellPadding: 2.5,
+        },
         columnStyles: {
             2: { halign: 'right' },
             3: { halign: 'center' },
-            4: { halign: 'right' }
+            4: { halign: 'right', fontStyle: 'bold', textColor: [49, 46, 229] },
         },
         margin: { left: margin, right: margin }
     });
     
-    // --- Summary Section ---
-    const finalY = (doc as any).autoTable.previous.finalY;
-    let currentY = finalY + 10;
-    
-    if (currentY > 260) { // Check if there's enough space, if not, add a new page
-        doc.addPage();
-        currentY = 20;
-    }
+    cursorY = doc.autoTable.previous.finalY;
 
+    // --- 4. SUMMARY ---
+    cursorY += 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.line(margin, currentY - 2, pageWidth - margin, currentY - 2);
-    
-    doc.text(t('grossSalary'), margin, currentY + 5);
-    doc.text(formatCurrency(payslip.grossSalary), pageWidth - margin, currentY + 5, { align: 'right' });
+    doc.setTextColor(51, 65, 85);
+    doc.text(t('grossSalary'), margin, cursorY);
+    doc.text(formatCurrency(payslip.grossSalary), pageWidth - margin, cursorY, { align: 'right' });
 
-    currentY += 7;
+    cursorY += 8;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100);
-
-    doc.text(t('allowancesBonus'), margin, currentY + 5);
-    doc.text(`+ ${formatCurrency(payslip.allowance)}`, pageWidth - margin, currentY + 5, { align: 'right' });
-
-    currentY += 7;
-    doc.text(t('deductions'), margin, currentY + 5);
-    doc.text(`- ${formatCurrency(payslip.deduction)}`, pageWidth - margin, currentY + 5, { align: 'right' });
-    
-    // --- Net Salary Footer ---
-    currentY += 15;
-    doc.setFillColor(79, 70, 229); // indigo-600
-    doc.rect(margin, currentY - 5, pageWidth - (margin * 2), 20, 'F');
-    
-    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.text(t('allowancesBonus'), margin, cursorY);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.text(t('netSalary').toUpperCase(), pageWidth - margin - 5, currentY + 2, { align: 'right' });
+    doc.setTextColor(22, 163, 74); // green-600
+    doc.text(`+ ${formatCurrency(payslip.allowance)}`, pageWidth - margin, cursorY, { align: 'right' });
     
-    doc.setFontSize(18);
-    doc.text(formatCurrency(payslip.netSalary), pageWidth - margin - 5, currentY + 10, { align: 'right' });
+    cursorY += 8;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(t('deductions'), margin, cursorY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(220, 38, 38); // red-600
+    doc.text(`- ${formatCurrency(payslip.deduction)}`, pageWidth - margin, cursorY, { align: 'right' });
+
+    // --- 5. NET SALARY FOOTER ---
+    const footerHeight = 30;
+    const footerY = pageHeight - footerHeight - 10;
+    doc.setFillColor(49, 46, 229); // Indigo-700
+    doc.rect(margin, footerY, pageWidth - (margin * 2), footerHeight, 'F');
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(224, 231, 255); // indigo-200
+    doc.text(t('netSalary').toUpperCase(), pageWidth - margin - 5, footerY + 10, { align: 'right' });
+    
+    doc.setFontSize(26);
+    doc.setTextColor(255, 255, 255);
+    doc.text(formatCurrency(payslip.netSalary), pageWidth - margin - 5, footerY + 22, { align: 'right' });
 
     return doc;
   };
 
-  const handleDownloadPDF = () => {
-    const doc = generatePdfDocument();
+
+  const handleDownloadPDF = async () => {
+    const doc = await generatePdfFromDOM();
     if (doc && payslip) {
         doc.save(`payslip-${payslip.employeeName.replace(/\s/g, '-')}-${payslip.period}.pdf`);
     }
@@ -141,7 +163,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
 
     setIsSharing(true);
     try {
-        const doc = generatePdfDocument();
+        const doc = await generatePdfFromDOM();
         if (!doc) throw new Error("PDF generation failed.");
 
         const pdfBlob = doc.output('blob');
@@ -155,7 +177,8 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
         if (navigator.canShare && navigator.canShare(shareData)) {
             await navigator.share(shareData);
         } else {
-            alert("This browser doesn't support file sharing.");
+            alert("This browser doesn't support file sharing. You can download the PDF instead.");
+            handleDownloadPDF(); // Fallback to download
         }
     } catch (error) {
         console.error('Error sharing:', error);
@@ -170,33 +193,66 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
   const handlePrint = () => {
     if (!payslipRef.current) return;
 
-    const printContent = payslipRef.current.innerHTML;
+    const printContent = payslipRef.current.outerHTML;
     const printWindow = window.open('', '_blank', 'height=800,width=800');
     
     if (printWindow) {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Print Payslip</title>
+                    <title>Print Payslip - ${payslip?.employeeName || ''}</title>
                     <script src="https://cdn.tailwindcss.com"></script>
+                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <script>
+                      tailwind.config = {
+                        theme: {
+                          extend: {
+                            fontFamily: {
+                              sans: ['Inter', 'sans-serif'],
+                              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                            },
+                          },
+                        },
+                      }
+                    </script>
                     <style>
                         @media print {
-                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            @page { size: A4; margin: 20mm; }
+                            body { 
+                                -webkit-print-color-adjust: exact; 
+                                print-color-adjust: exact; 
+                                margin: 0;
+                            }
+                            @page { 
+                                size: A4; 
+                                margin: 20mm; /* Standard print margin */
+                            }
+                            /* The main wrapper in the preview component */
+                            .payslip-print-wrapper {
+                                box-shadow: none !important;
+                                border: none !important;
+                                transform: scale(0.9); /* Scale down slightly to prevent cutoff */
+                                transform-origin: top left;
+                            }
+                            .no-print {
+                                display: none !important;
+                            }
                         }
                     </style>
                 </head>
-                <body>
+                <body class="bg-white">
                     ${printContent}
                 </body>
             </html>
         `);
         printWindow.document.close();
         printWindow.focus();
-        setTimeout(() => { // Timeout ensures content is loaded before print dialog opens
-             printWindow.print();
-             printWindow.close();
-        }, 250);
+        // Using a load event listener is more reliable than a fixed timeout
+        printWindow.addEventListener('load', () => {
+            printWindow.print();
+            printWindow.close();
+        }, true);
     }
   };
 
@@ -213,7 +269,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
 
   return (
     <div className="flex flex-col h-full bg-slate-100 rounded-xl shadow-lg border border-slate-200/80 transition-shadow hover:shadow-2xl">
-      <div ref={payslipRef} className="bg-white p-4 sm:p-6 md:p-8 flex-grow rounded-t-xl">
+      <div ref={payslipRef} className="bg-white p-4 sm:p-6 md:p-8 flex-grow rounded-t-xl payslip-print-wrapper">
         <header className="flex justify-between items-start border-b-2 border-indigo-500 pb-4 mb-6">
           <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-500 text-transparent bg-clip-text tracking-wider font-serif">{t('payslip')}</h1>
@@ -285,7 +341,7 @@ export const PayslipPreview: React.FC<{ payslip: Payslip | null }> = ({ payslip 
             <p className="text-4xl font-bold font-mono">{formatCurrency(payslip.netSalary)}</p>
         </footer>
       </div>
-      <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="bg-slate-100 p-4 rounded-b-xl border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 no-print">
         <button
           onClick={handleShare}
           disabled={isSharing}
