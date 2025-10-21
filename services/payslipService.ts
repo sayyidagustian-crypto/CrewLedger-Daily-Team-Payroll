@@ -41,7 +41,8 @@ class PayslipService {
 
         const currentPeriodLogs = dailyLogs
             .filter(log => {
-                const logDate = new Date(log.date);
+                // FIX: Parse date as UTC to avoid timezone issues.
+                const logDate = new Date(log.date + 'T00:00:00Z');
                 return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
             });
         
@@ -49,7 +50,8 @@ class PayslipService {
             .filter(log => previousLogIds.includes(log.id) && log.presentEmployeeIds.includes(employee.id));
 
         const relevantLogs = [...previousPeriodLogs, ...currentPeriodLogs]
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            // FIX: Parse date as UTC for correct sorting across timezones.
+            .sort((a, b) => new Date(a.date + 'T00:00:00Z').getTime() - new Date(b.date + 'T00:00:00Z').getTime())
             // IMPORTANT: Recalculate each log to fix old data structures.
             .map(log => this._recalculateLog(log));
 
@@ -108,7 +110,8 @@ class PayslipService {
         activeEmployees.forEach(employee => {
             const relevantLogs = dailyLogs
                 .filter(log => {
-                    const logDate = new Date(log.date);
+                    // FIX: Parse date as UTC to avoid timezone issues.
+                    const logDate = new Date(log.date + 'T00:00:00Z');
                     return log.presentEmployeeIds.includes(employee.id) && logDate.getUTCMonth() === periodMonth && logDate.getUTCFullYear() === periodYear;
                 })
                 // IMPORTANT: Recalculate each log to fix old data structures.

@@ -88,6 +88,11 @@ const translations = {
     addFreelanceJob: '+ Add Freelance Job',
     alertEnterJobNameAndEarning: 'Please enter a job name and a valid earning amount.',
     freelanceJobTag: 'Freelance',
+    editLog: 'Edit Log',
+    editLogDate: 'Edit Log Date',
+    currentDate: 'Current Date',
+    newDate: 'New Date',
+    logDateUpdatedSuccess: 'Log date has been successfully updated.',
 
     // Payslip Generator
     generatePayslip: 'Generate Payslip',
@@ -283,6 +288,11 @@ const translations = {
     addFreelanceJob: '+ Tambah Pekerjaan Lepas',
     alertEnterJobNameAndEarning: 'Harap masukkan nama pekerjaan dan jumlah pendapatan yang valid.',
     freelanceJobTag: 'Pekerjaan Lepas',
+    editLog: 'Ubah Catatan',
+    editLogDate: 'Ubah Tanggal Catatan',
+    currentDate: 'Tanggal Saat Ini',
+    newDate: 'Tanggal Baru',
+    logDateUpdatedSuccess: 'Tanggal catatan berhasil diperbarui.',
 
     // Payslip Generator
     generatePayslip: 'Buat Slip Gaji',
@@ -450,8 +460,17 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [language]);
 
   const formatDate = useCallback((dateString: string): string => {
+    // FIX: Add a guard to prevent RangeError for invalid or empty date strings.
+    if (!dateString) {
+        return "";
+    }
     // Input is YYYY-MM-DD. We need to create a Date object in UTC to avoid timezone issues.
     const date = new Date(dateString + 'T00:00:00Z');
+
+    if (isNaN(date.getTime())) {
+        return dateString; // Return original string if it's invalid
+    }
+
     return new Intl.DateTimeFormat(language === 'id' ? 'id-ID' : 'en-US', {
         day: '2-digit',
         month: 'short',

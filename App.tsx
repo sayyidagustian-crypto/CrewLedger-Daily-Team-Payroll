@@ -2,13 +2,13 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import type { User, Employee, PieceRate, DailyGroupLog, Payslip, DailyTask, PayslipLogEntry, DevSettings, CustomTask } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import { PayslipPreview } from './components/PayslipPreview';
-import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon, LogoutIcon, AtSymbolIcon, LockClosedIcon, IdentificationIcon, PhoneIcon, InformationCircleIcon } from './components/icons';
+import { UserPlusIcon, TrashIcon, SaveIcon, UsersIcon, DocumentTextIcon, ArchiveBoxIcon, TagIcon, UserCircleIcon, CogIcon, UploadIcon, DownloadIcon, EyeIcon, XMarkIcon, SparklesIcon, MenuIcon, LogoutIcon, AtSymbolIcon, LockClosedIcon, IdentificationIcon, PhoneIcon, InformationCircleIcon, PencilIcon } from './components/icons';
 import { useI18n } from './i18n';
 import { remoteConfigService } from './services/remoteConfig';
 import { payslipService } from './services/payslipService';
 
 type ActiveTab = 'dailyLog' | 'generator' | 'employees' | 'rates' | 'history' | 'settings';
-type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy' | 'devAccess';
+type ModalType = null | 'addEmployee' | 'editEmployee' | 'addRate' | 'editRate' | 'deleteConfirm' | 'bulkGenerate' | 'viewPayslip' | 'policy' | 'devAccess' | 'editLogDate';
 
 
 // =================================================================
@@ -174,6 +174,48 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
         </Modal>
     );
     
+    const EditLogDateModalContent: React.FC = () => {
+        const logToEdit = modal.data as DailyGroupLog;
+        const [newDate, setNewDate] = useState(logToEdit.date);
+
+        const handleSave = () => {
+            if (!newDate) {
+                alert('Please select a date.'); // Should be translated, but for simplicity...
+                return;
+            }
+            setDailyLogs(prev => prev.map(log => 
+                log.id === logToEdit.id ? { ...log, date: newDate } : log
+            ));
+            alert(t('logDateUpdatedSuccess'));
+            closeModal();
+        };
+
+        return (
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700">{t('currentDate')}</label>
+                    <p className="mt-1 text-slate-500">{formatDate(logToEdit.date)}</p>
+                </div>
+                <div>
+                    <label htmlFor="newLogDate" className="block text-sm font-medium text-slate-700">{t('newDate')}</label>
+                    <input 
+                        type="date" 
+                        id="newLogDate" 
+                        value={newDate} 
+                        onChange={e => setNewDate(e.target.value)} 
+                        className="mt-1 block w-full px-3 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                    />
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                    <button type="button" onClick={closeModal} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">{t('cancel')}</button>
+                    <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center">
+                        <SaveIcon /> {t('saveChanges')}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     const DevAccessModalContent: React.FC = () => {
         const [devSettings, setDevSettings] = useLocalStorage<DevSettings>('dev_settings', { admobBannerId: '', adsenseClientId: '' });
         const [oneTimeCode, setOneTimeCode] = useState('');
@@ -579,8 +621,13 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
                                             <p className="font-bold text-slate-800 text-lg font-mono">{formatCurrency(log.totalGrossEarnings)}</p>
                                             <p className="text-sm text-slate-500">{log.presentEmployeeIds.length} {t('workersPresent')} ({formatCurrency(log.individualEarnings)} / {t('perPerson')})</p>
                                         </div>
-                                        <div>
-                                            <button onClick={() => openModal('deleteConfirm', { itemType: 'log', id: log.id })} className="text-red-500 hover:text-red-700 p-1"><TrashIcon /></button>
+                                        <div className="flex items-center space-x-1">
+                                            <button onClick={() => openModal('editLogDate', log)} className="text-slate-500 hover:text-indigo-700 p-1" aria-label={t('editLog')}>
+                                                <PencilIcon />
+                                            </button>
+                                            <button onClick={() => openModal('deleteConfirm', { itemType: 'log', id: log.id })} className="text-red-500 hover:text-red-700 p-1" aria-label={t('delete')}>
+                                                <TrashIcon />
+                                            </button>
                                         </div>
                                     </div>
                                     <ul className="mt-2 text-sm text-slate-600 list-disc list-inside">
@@ -1192,6 +1239,11 @@ const MainApp: React.FC<{ currentUser: User; onLogout: () => void; isGuest: bool
             </main>
 
             {modal.type === 'deleteConfirm' && <DeleteConfirmationModal />}
+            {modal.type === 'editLogDate' && (
+                <Modal title={t('editLogDate')}>
+                   <EditLogDateModalContent />
+                </Modal>
+            )}
              {modal.type === 'devAccess' && (
                 <Modal title={t('devAccess')}>
                    <DevAccessModalContent />
